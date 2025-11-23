@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Teacher{% endblock %}
+{% block content %}
+<div class="card" style="max-width:820px;margin:18px auto">
+  <h2>{{ action }} Teacher</h2>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.first_name.label }} {{ form.first_name() }}
+      </div>
+      <div class="form-field">
+        {{ form.last_name.label }} {{ form.last_name() }}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.email.label }} {{ form.email() }}
+      </div>
+      <div class="form-field">
+        {{ form.education_level_id.label }} {{ form.education_level_id() }}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.max_periods_per_day.label }} {{ form.max_periods_per_day() }}
+      </div>
+      <div class="form-field">
+        {{ form.max_periods_per_week.label }} {{ form.max_periods_per_week() }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ action }}</button>
+      <a class="btn ghost" href="{{ url_for('main.manage_teachers') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

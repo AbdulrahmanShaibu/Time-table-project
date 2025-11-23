@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Generate Timetable{% endblock %}
+
+{% block content %}
+<div class="management-page">
+    <h2>Generate Timetables</h2>
+
+    <form method="POST" action="{{ url_for('admin_generate') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-inline">
+            <label>Select Week Start Date:</label>
+            <input type="date" name="week_start" class="form-control" required>
+            <button type="submit" class="btn">Generate Automatically</button>
+        </div>
+    </form>
+
+    {% if generation_result %}
+    <div class="generation-result">
+        <h3>Generation Summary</h3>
+        <ul>
+            <li>Total Classes: {{ generation_result.total_classes }}</li>
+            <li>Total Subjects: {{ generation_result.total_subjects }}</li>
+            <li>Conflicts Detected: {{ generation_result.conflicts }}</li>
+            <li>Status: {{ generation_result.status }}</li>
+        </ul>
+    </div>
+    {% endif %}
+
+    <hr>
+    <h3>Export Options</h3>
+    <div class="export-buttons">
+        <a href="{{ url_for('download_timetable', format='pdf') }}" class="btn">Export as PDF</a>
+        <a href="{{ url_for('download_timetable', format='excel') }}" class="btn">Export as Excel</a>
+    </div>
+</div>
+{% endblock %}

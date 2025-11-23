@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Schools{% endblock %}
+{% block content %}
+<div class="card page-title">
+  <div style="
+    display:flex;align-items:flex-start;gap:18px;
+    background:#fff;border:1px solid #e6e8ec;border-left:5px solid #059669;
+    padding:22px 24px;border-radius:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;
+">
+    <div style="
+      background:#059669;width:48px;height:48px;border-radius:12px;
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 8px rgba(5,150,105,0.3);
+  ">
+      <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
+        <path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <path d="M9 22V12h6v10" />
+      </svg>
+    </div>
+
+    <div>
+      <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">Schools Management</h1>
+      <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;">
+        Maintain all registered schools in the system. Add or update school details to keep organizational data
+        accurate.
+      </p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <!-- <a class="btn" href="{{ url_for('main.add_school') }}">Add School</a> -->
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <input class="search-input" placeholder="Search schools..." />
+    <div>
+      <label class="small-muted">Per page</label>
+      <select class="select-page">
+        <option>5</option>
+        <option selected>10</option>
+        <option>25</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Created</th>
+        <!-- <th>Actions</th> -->
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in schools %}
+      <tr>
+        <td>{{ s.id }}</td>
+        <td>{{ s.name }}</td>
+        <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '' }}</td>
+        <td>
+          <a class="btn ghost" href="{{ url_for('main.edit_school', school_id=s.id) }}">Edit</a>
+          <form id="delete-school-{{ s.id }}" action="{{ url_for('main.delete_school', school_id=s.id) }}" method="post"
+            style="display:inline">
+            <!-- <button type="button" class="btn ghost" onclick="confirmDelete('delete-school-{{ s.id }}','Delete this school?')">Delete</button> -->
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pager"></div>
+
+  <style>
+    .search-input {
+      width: 100%;
+      max-width: 380px;
+      padding: 14px 18px;
+      font-size: 15px;
+      color: #1f2937;
+      /* Neutral dark text */
+      background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
+
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+
+      outline: none;
+      transition: all 0.25s ease;
+
+      /* Subtle inner shadow for a polished effect */
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-input:focus {
+      background: #ffffff;
+
+      border-color: #2563eb;
+      /* Deep professional blue */
+      box-shadow:
+        0 0 0 4px rgba(37, 99, 235, 0.18),
+        /* Outer glow */
+        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      /* Retain inner shadow */
+    }
+
+    .search-input:hover:not(:focus) {
+      background: #ffffff;
+      border-color: #93c5fd;
+      /* Soft hover highlight */
+    }
+
+    .search-input::placeholder {
+      color: #9ca3af;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    /* Optional: smooth placeholder transition */
+    .search-input:focus::placeholder {
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+  </style>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Class{% endblock %}
+{% block content %}
+<div class="card" style="max-width:820px;margin:18px auto">
+  <h2>{{ action }} Class</h2>
+  <form method="post">
+    {{ form.hidden_tag() }}
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.name.label }} {{ form.name() }}
+      </div>
+      <div class="form-field">
+        {{ form.size.label }} {{ form.size() }}
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.school_id.label }} {{ form.school_id() }}
+      </div>
+      <div class="form-field">
+        {{ form.education_level_id.label }} {{ form.education_level_id() }}
+      </div>
+      <div class="form-field">
+        {{ form.assigned_teacher_id.label }} {{ form.assigned_teacher_id() }}
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" type="submit">{{ action }}</button>
+      <a class="btn btn-warning" href="{{ url_for('main.manage_classes') }}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

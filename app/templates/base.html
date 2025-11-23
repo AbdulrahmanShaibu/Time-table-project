@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}School Timetable System{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <!-- SweetAlert2 & Custom JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+    <script src="{{ url_for('static', filename='js/admin_crud.js') }}" defer></script>
+
+    {% block head_extra %}{% endblock %}
+
+    <style>
+        /* Layout */
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f8fb;
+            color: #222;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        body.dark-mode {
+            background-color: #1e1e2f;
+            color: #ccc;
+        }
+
+        .layout {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #2c3e50;
+            /* Deep professional blue-gray */
+            box-shadow: 3px 0 15px rgba(0, 0, 0, 0.2);
+            /* Slightly stronger shadow for depth */
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            position: relative;
+            z-index: 100;
+            color: #ecf0f1;
+            /* Light text for readability */
+        }
+
+
+        body.dark-mode .sidebar {
+            background: #1f2235;
+            /* Dark slate blue - rich & calm */
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.75);
+            /* Stronger shadow for depth */
+            color: #d1d5db;
+            /* Soft light gray text for good contrast */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+
+        /* Brand Row */
+        .brand-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            background: #f0f7ff;
+        }
+
+        body.dark-mode .brand-row {
+            background: #23233f;
+            border-color: #444466;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #007bff;
+        }
+
+        body.dark-mode .brand {
+            color: #66aaff;
+        }
+
+        .school-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            transition: box-shadow 0.3s ease;
+        }
+
+        body.dark-mode .school-logo {
+            box-shadow: 0 2px 8px rgba(102, 170, 255, 0.7);
+        }
+
+        /* Sidebar toggle button */
+        #sidebarToggle {
+            background: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #007bff;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease;
+        }
+
+        #sidebarToggle:hover,
+        #sidebarToggle:focus {
+            background-color: #007bff;
+            color: white;
+            outline: none;
+        }
+
+        body.dark-mode #sidebarToggle {
+            color: #66aaff;
+        }
+
+        body.dark-mode #sidebarToggle:hover,
+        body.dark-mode #sidebarToggle:focus {
+            background-color: #66aaff;
+            color: #1e1e2f;
+        }
+
+        /* Navigation Menu */
+        .menu {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 25px;
+            color: #444;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            border-left: 4px solid transparent;
+            transition: background-color 0.3s ease, color 0.3s ease, border-left-color 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .menu-item i {
+            min-width: 18px;
+            font-size: 1.2rem;
+        }
+
+        .menu-item:hover,
+        .menu-item:focus-visible {
+            background-color: #007bff22;
+            color: #007bff;
+            outline: none;
+            border-left-color: #007bff;
+        }
+
+        .menu-item[aria-current="page"] {
+            background-color: #007bff33;
+            color: #0056b3;
+            border-left-color: #0056b3;
+            font-weight: 700;
+        }
+
+        body.dark-mode .menu-item {
+            color: #ccc;
+        }
+
+        body.dark-mode .menu-item:hover,
+        body.dark-mode .menu-item:focus-visible {
+            background-color: #66aaff33;
+            color: #66aaff;
+            border-left-color: #66aaff;
+        }
+
+        body.dark-mode .menu-item[aria-current="page"] {
+            background-color: #4466aa33;
+            color: #4466aa;
+            border-left-color: #4466aa;
+            font-weight: 700;
+        }
+
+        /* Dark Mode Button */
+        .btn-toggle-darkmode {
+            border: none;
+            background: #007bff;
+            color: white;
+            font-weight: 700;
+            margin: 15px 25px 20px;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            user-select: none;
+            justify-content: center;
+        }
+
+        .btn-toggle-darkmode i {
+            font-size: 1.3rem;
+        }
+
+        .btn-toggle-darkmode:hover,
+        .btn-toggle-darkmode:focus {
+            background-color: #0056b3;
+            outline: none;
+        }
+
+        body.dark-mode .btn-toggle-darkmode {
+            background-color: #66aaff;
+            color: #1e1e2f;
+        }
+
+        body.dark-mode .btn-toggle-darkmode:hover,
+        body.dark-mode .btn-toggle-darkmode:focus {
+            background-color: #335599;
+        }
+
+        /* Main Content */
+        .main {
+            flex-grow: 1;
+            padding: 25px 30px;
+            overflow-y: auto;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            box-sizing: border-box;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgb(0 0 0 / 0.1);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.dark-mode .main {
+            background: #282c44;
+            color: #ddd;
+            box-shadow: 0 12px 30px rgb(0 0 0 / 0.7);
+        }
+
+        /* Flash messages */
+        .flash-wrap {
+            margin-bottom: 20px;
+        }
+
+        .flash {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-info {
+            background-color: #cce5ff;
+            color: #004085;
+            border: 1px solid #b8daff;
+        }
+
+        body.dark-mode .flash-success {
+            background-color: #346634;
+            color: #a7d7a7;
+            border-color: #234622;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        body.dark-mode .flash-error {
+            background-color: #7a2e2e;
+            color: #f5baba;
+            border-color: #5b1e1e;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        body.dark-mode .flash-info {
+            background-color: #2f4970;
+            color: #a9c7ff;
+            border-color: #234166;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.6);
+        }
+
+        /* Footer */
+        footer {
+            padding: 15px 25px;
+            background: #007bff;
+            color: white;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.2);
+            user-select: none;
+            flex-shrink: 0;
+            transition: background-color 0.3s ease;
+        }
+
+        body.dark-mode footer {
+            background: #335599;
+            color: #cce5ff;
+        }
+
+        /* Responsive sidebar collapse */
+        @media (max-width: 900px) {
+            .sidebar {
+                width: 60px;
+            }
+
+            .sidebar .brand,
+            .sidebar .btn-toggle-darkmode,
+            .sidebar .menu-item span {
+                display: none;
+            }
+
+            .sidebar .menu-item {
+                justify-content: center;
+                padding: 15px 0;
+            }
+
+            .school-logo {
+                width: 36px;
+                height: 36px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .layout {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                padding: 5px 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar .brand {
+                flex-grow: 1;
+                font-size: 1rem;
+                padding: 0 10px;
+            }
+
+            .sidebar .menu {
+                flex-direction: row;
+                overflow-x: auto;
+                flex-grow: 0;
+            }
+
+            .sidebar .menu-item {
+                flex-shrink: 0;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+
+            .btn-toggle-darkmode {
+                margin: 0 10px;
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            .main {
+                max-width: 100%;
+                border-radius: 0;
+                box-shadow: none;
+                padding: 15px;
+                min-height: auto;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" aria-label="Primary navigation sidebar">
+            <div class="brand-row">
+                <div class="brand">
+                    <img src="{{ url_for('static', filename='images/realistic-school.png') }}"
+                        alt="Maahad Istiqama School" style="
+                      width: 200px;
+                      height: 140px;
+                      object-fit: cover;
+                      display: block;
+                      border-radius: 12px;
+                      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+                    ">
+                    <!-- <span class="brand-text">Time-table • Maahad Istiqama</span> -->
+                </div>
+                <button id="sidebarToggle" class="sidebar-toggle-btn" aria-label="Toggle sidebar navigation">
+                    <i class="fas fa-bars" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <nav class="menu" role="navigation" aria-label="Sidebar menu">
+                <a class="menu-item" href="{{ url_for('main.admin_dashboard') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.admin_dashboard' else 'false' }}">
+                    <i class="fas fa-tachometer-alt" aria-hidden="true"></i> <span>Dashboard</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.manage_teachers') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.manage_teachers' else 'false' }}">
+                    <i class="fas fa-chalkboard-teacher" aria-hidden="true"></i> <span>Teachers</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.manage_subjects') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.manage_subjects' else 'false' }}">
+                    <i class="fas fa-book-open" aria-hidden="true"></i> <span>Subjects</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.list_schools') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.list_schools' else 'false' }}">
+                    <i class="fas fa-building" aria-hidden="true"></i> <span>Schools</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.manage_classes') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.manage_classes' else 'false' }}">
+                    <i class="fas fa-school" aria-hidden="true"></i> <span>Classes</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.manage_rooms') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.manage_rooms' else 'false' }}">
+                    <i class="fas fa-door-open" aria-hidden="true"></i> <span>Rooms</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.list_period_templates') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.list_period_templates' else 'false' }}">
+                    <i class="fas fa-clock" aria-hidden="true"></i> <span>Period templates</span>
+                </a>
+                <a class="menu-item" href="{{ url_for('main.list_timetables') }}"
+                    aria-current="{{ 'page' if request.endpoint == 'main.list_timetables' else 'false' }}">
+                    <i class="fas fa-calendar-alt" aria-hidden="true"></i> <span>Timetable</span>
+                </a>
+                <button class="menu-item btn-toggle-darkmode" onclick="toggleDarkMode()" title="Toggle Dark Mode"
+                    aria-pressed="false">
+                    <i class="fas fa-moon" aria-hidden="true"></i> <span>Dark Mode</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main content -->
+        <main class="main" tabindex="0">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="flash-wrap" role="region" aria-live="polite" aria-atomic="true">
+                {% for category, msg in messages %}
+                <div class="flash flash-{{ category }}">{{ msg }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        <p>{{ current_year }}Maahad Istiqama,Tunguu-Zanzibar</p>
+        <p id="footerYear">&copy; School Timetable System. All Rights Reserved. <span id="year">...</span></p>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+
+    <script src="{{ url_for('static', filename='js/table_utils.js') }}"></script>
+
+    <script>
+        // Sidebar toggle for small screens
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.getElementById('sidebarToggle');
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        // Dark mode toggle
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
+            const btn = document.querySelector('.btn-toggle-darkmode');
+            const isDark = body.classList.contains('dark-mode');
+            btn.setAttribute('aria-pressed', isDark);
+            btn.innerHTML = isDark
+                ? '<i class="fas fa-sun" aria-hidden="true"></i> <span>Light Mode</span>'
+                : '<i class="fas fa-moon" aria-hidden="true"></i> <span>Dark Mode</span>';
+        }
+
+        function Year() {
+            return new Date().getFullYear();
+        }
+        const el = document.getElementById('year');
+        if (el) el.textContent = Year();
+
+
+    </script>
+</body>
+
+</html>

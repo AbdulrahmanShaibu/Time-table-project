@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Timetable Editor{% endblock %}
+
+{% block content %}
+<div class="management-page">
+    <h2>Timetable Editor</h2>
+
+    <div class="editor-toolbar">
+        <select id="classSelector" class="form-control">
+            <option value="">Select Class</option>
+            {% for class_ in classes %}
+            <option value="{{ class_.id }}">{{ class_.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select id="teacherSelector" class="form-control">
+            <option value="">Select Teacher</option>
+            {% for teacher in teachers %}
+            <option value="{{ teacher.id }}">{{ teacher.name }}</option>
+            {% endfor %}
+        </select>
+
+        <button id="loadTimetable" class="btn">Load</button>
+        <button id="saveTimetable" class="btn">Save Changes</button>
+    </div>
+
+    <div id="timetableContainer" class="timetable-editor">
+        <table id="editorTable" class="styled-table timetable">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    {% for day in days %}
+                    <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for period in range(1, total_periods + 1) %}
+                <tr>
+                    <td>{{ period }}</td>
+                    {% for day in days %}
+                    <td contenteditable="true" data-day="{{ day }}" data-period="{{ period }}"></td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/timetable_editor.js') }}"></script>
+{% endblock %}

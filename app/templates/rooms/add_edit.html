@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Room{% endblock %}
+{% block content %}
+<div class="card" style="max-width:720px;margin:18px auto">
+    <h2>{{ action }} Room</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-field">{{ form.name.label }} {{ form.name() }}</div>
+            <div class="form-field">{{ form.capacity.label }} {{ form.capacity() }}</div>
+            <div class="form-field">{{ form.school_id.label }} {{ form.school_id() }}</div>
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">{{ action }}</button>
+            <a class="btn ghost" href="{{ url_for('main.manage_rooms') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

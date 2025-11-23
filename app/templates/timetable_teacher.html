@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Teacher Timetable{% endblock %}
+
+{% block content %}
+<div class="management-page">
+    <h2>Teacher Timetable: {{ teacher.name }}</h2>
+
+    <table class="styled-table timetable">
+        <thead>
+            <tr>
+                <th>Period</th>
+                {% for day in days %}
+                <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for period in range(1, total_periods + 1) %}
+            <tr>
+                <td>{{ period }}</td>
+                {% for day in days %}
+                <td>
+                    {% if timetable[day][period] %}
+                        <strong>{{ timetable[day][period].subject }}</strong><br>
+                        <small>Class: {{ timetable[day][period].class }}</small><br>
+                        <small>Room: {{ timetable[day][period].room }}</small>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+<form method="POST" action="{{ url_for('main.delete_teacher', id=teacher.id) }}">
+    {{ form.hidden_tag() }}
+    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+    <a href="{{ url_for('main.manage_teachers') }}" class="btn btn-secondary">Cancel</a>
+</form>

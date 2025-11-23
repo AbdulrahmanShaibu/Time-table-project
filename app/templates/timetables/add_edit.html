@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Timetable Entry{% endblock %}
+{% block content %}
+<div class="card" style="max-width:920px;margin:18px auto">
+    <h2>{{ action }} Timetable Entry</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-field">{{ form.class_subject_assignment_id.label }} {{ form.class_subject_assignment_id()
+                }}</div>
+            <div class="form-field">{{ form.room_id.label }} {{ form.room_id() }}</div>
+            <div class="form-field">{{ form.day_of_week.label }} {{ form.day_of_week() }}</div>
+            <div class="form-field">{{ form.start_time.label }} {{ form.start_time() }}</div>
+            <div class="form-field">{{ form.end_time.label }} {{ form.end_time() }}</div>
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">{{ action }}</button>
+            <a class="btn ghost" href="{{ url_for('main.list_timetables') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

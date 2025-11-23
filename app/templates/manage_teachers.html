@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Teachers{% endblock %}
+{% block content %}
+<div class="card page-title">
+  <div style="
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  background: #ffffff;
+  border: 1px solid #e6e8ec;
+  border-left: 5px solid #2563eb; 
+  padding: 22px 24px;
+  border-radius: 14px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  margin-bottom: 22px;
+">
+
+    <!-- Info Icon -->
+    <div style="
+    background: #2563eb;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(37,99,235,0.3);
+">
+      <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#ffffff' fill='none' stroke-width='2'
+        stroke-linecap='round' stroke-linejoin='round'>
+        <circle cx='12' cy='12' r='10'></circle>
+        <line x1='12' y1='16' x2='12' y2='12'></line>
+        <line x1='12' y1='8' x2='12.01' y2='8'></line>
+      </svg>
+    </div>
+
+    <!-- Text Content -->
+    <div>
+      <h1 style="
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    ">
+        Teachers Management
+      </h1>
+
+      <p style="
+        margin: 8px 0 0;
+        font-size: 15px;
+        color: #4b5563;
+        line-height: 1.6;
+        max-width: 700px;
+    ">
+        This section allows you to view, manage, and update all teachers registered in the system.
+        Use the <strong>"Add Teacher"</strong> button to register a new teacher and keep records up to date.
+      </p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <a class="btn btn-success" href="{{ url_for('main.add_teacher') }}">Add Teacher</a>
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <input class="search-input" placeholder="Search teachers..." />
+    <div>
+      <label class="small-muted">Per page</label>
+      <select class="select-page">
+        <option>5</option>
+        <option selected>10</option>
+        <option>25</option>
+      </select>
+    </div>
+  </div>
+
+  <table class="table data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Qualification</th>
+        <th>Max/day</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in teachers %}
+      <tr>
+        <td>{{ t.id }}</td>
+        <td>{{ t.full_name }}</td>
+        <td>{{ t.email or '' }}</td>
+        <td>{{ t.qualification }}</td>
+        <td>{{ t.max_periods_per_day }}</td>
+        <td>
+          <a class="btn btn-primary" href="{{ url_for('main.edit_teacher', teacher_id=t.id) }}">Edit</a>
+          <form id="delete-teacher-{{ t.id }}" action="{{ url_for('main.delete_teacher', teacher_id=t.id) }}"
+            method="post" style="display:inline">
+            <button type="button" class="btn btn-danger"
+              onclick="confirmDelete('delete-teacher-{{ t.id }}','Delete this teacher?')">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="pager"></div>
+
+  <style>
+    .search-input {
+      width: 100%;
+      max-width: 380px;
+      padding: 14px 18px;
+      font-size: 15px;
+      color: #1f2937;
+      /* Neutral dark text */
+      background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
+
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+
+      outline: none;
+      transition: all 0.25s ease;
+
+      /* Subtle inner shadow for a polished effect */
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+
+    .search-input:focus {
+      background: #ffffff;
+
+      border-color: #2563eb;
+      /* Deep professional blue */
+      box-shadow:
+        0 0 0 4px rgba(37, 99, 235, 0.18),
+        /* Outer glow */
+        inset 0 1px 3px rgba(0, 0, 0, 0.05);
+      /* Retain inner shadow */
+    }
+
+    .search-input:hover:not(:focus) {
+      background: #ffffff;
+      border-color: #93c5fd;
+      /* Soft hover highlight */
+    }
+
+    .search-input::placeholder {
+      color: #9ca3af;
+      font-style: italic;
+      opacity: 0.8;
+    }
+
+    /* Optional: smooth placeholder transition */
+    .search-input:focus::placeholder {
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+    }
+  </style>
+
+
+</div>
+{% endblock %}

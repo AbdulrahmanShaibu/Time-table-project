@@ -1,0 +1,39 @@
+version: "3.8"
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: school_timetable
+      MYSQL_USER: school_admin
+      MYSQL_PASSWORD: school_password
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - "3306:3306"
+
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      FLASK_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: school_admin
+      DB_PASSWORD: school_password
+      DB_NAME: school_timetable
+      SECRET_KEY: replace_with_a_real_secret_key
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./:/app
+    command: >
+      sh -c "python run.py"
+
+volumes:
+  db_data:

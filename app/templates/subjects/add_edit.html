@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Subject{% endblock %}
+{% block content %}
+<div class="card" style="max-width:820px;margin:18px auto">
+    <h2>{{ action }} Subject</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-field">{{ form.code.label }} {{ form.code() }}</div>
+            <div class="form-field">{{ form.name.label }} {{ form.name() }}</div>
+            <div class="form-field">{{ form.subject_type.label }} {{ form.subject_type() }}</div>
+            <div class="form-field">{{ form.periods_per_week.label }} {{ form.periods_per_week() }}</div>
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">{{ action }}</button>
+            <a class="btn ghost" href="{{ url_for('main.manage_subjects') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

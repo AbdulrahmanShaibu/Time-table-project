@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Period Template{% endblock %}
+{% block content %}
+<div class="card" style="max-width:720px;margin:18px auto">
+    <h2>{{ action }} Period Template</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-row">
+            <div class="form-field">{{ form.name.label }} {{ form.name() }}</div>
+            <div class="form-field">{{ form.days_per_week.label }} {{ form.days_per_week() }}</div>
+            <div class="form-field">{{ form.periods_per_day.label }} {{ form.periods_per_day() }}</div>
+            <div class="form-field">{{ form.break_after_period.label }} {{ form.break_after_period() }}</div>
+        </div>
+        <div class="form-actions">
+            <button class="btn" type="submit">{{ action }}</button>
+            <a class="btn btn-warning" href="{{ url_for('main.list_period_templates') }}">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

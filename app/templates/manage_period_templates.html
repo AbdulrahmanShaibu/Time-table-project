@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Period Templates</h2>
+
+<a class="btn btn-primary" href="{{ url_for('main.add_period_template') }}">Add Template</a>
+
+<table class="table mt-3">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Start</th>
+      <th>End</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in templates %}
+    <tr>
+      <td>{{ t.name }}</td>
+      <td>{{ t.start_time }}</td>
+      <td>{{ t.end_time }}</td>
+      <td>
+        <a class="btn btn-primary" href="{{ url_for('main.edit_period_template', id=t.id) }}">Edit</a>
+        <a class="btn btn-danger" href="{{ url_for('main.delete_period_template', id=t.id) }}">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

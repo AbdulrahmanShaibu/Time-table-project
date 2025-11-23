@@ -1,0 +1,581 @@
+<!-- Enhanced Admin Dashboard Template -->
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- ===================== LOADING SCREEN ===================== -->
+<div id="loading-screen" role="alert" aria-live="assertive" aria-label="Loading dashboard">
+    <div class="loader" aria-hidden="true"></div>
+    <p class="loading-text">Loading Dashboard...</p>
+</div>
+
+<!-- ===================== DARK MODE TOGGLE & DATE TIME ===================== -->
+<div class="top-bar">
+    <div class="datetime" aria-live="polite" aria-atomic="true" role="timer" aria-label="Current date and time"></div>
+    <button id="darkModeToggle" aria-pressed="false" aria-label="Toggle dark mode" title="Toggle Dark Mode">
+        <i class="fa-solid fa-moon"></i> Dark Mode
+    </button>
+</div>
+
+<!-- ===================== CENTERED WRAPPER ===================== -->
+<div class="dashboard-wrapper fade-start" tabindex="0" aria-label="Admin Dashboard main content">
+
+    <h1 class="dash-title">Admin Dashboard</h1>
+
+    <!-- Search Filter -->
+    <div class="search-container">
+        <input type="search" id="cardSearch" placeholder="Search stats..." aria-label="Search dashboard stats" />
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="dashboard-cards" aria-live="polite" aria-relevant="additions removals" role="list">
+        <div class="card" role="listitem" tabindex="0" aria-describedby="desc-teachers">
+            <i class="fa-solid fa-person-chalkboard card-icon" aria-hidden="true"></i>
+            <div class="card-info">
+                <p class="card-title" id="desc-teachers">Total Teachers</p>
+                <p class="card-value">{{ total_teachers }}</p>
+                <small class="card-tooltip" aria-hidden="true">Count of all registered teachers</small>
+            </div>
+        </div>
+
+        <div class="card" role="listitem" tabindex="0" aria-describedby="desc-subjects">
+            <i class="fa-solid fa-book card-icon" aria-hidden="true"></i>
+            <div class="card-info">
+                <p class="card-title" id="desc-subjects">Total Subjects</p>
+                <p class="card-value">{{ total_subjects }}</p>
+                <small class="card-tooltip" aria-hidden="true">Number of subjects offered</small>
+            </div>
+        </div>
+
+        <div class="card" role="listitem" tabindex="0" aria-describedby="desc-classes">
+            <i class="fa-solid fa-school card-icon" aria-hidden="true"></i>
+            <div class="card-info">
+                <p class="card-title" id="desc-classes">Total Classes</p>
+                <p class="card-value">{{ total_classes }}</p>
+                <small class="card-tooltip" aria-hidden="true">All active classes</small>
+            </div>
+        </div>
+
+        <div class="card" role="listitem" tabindex="0" aria-describedby="desc-periods">
+            <i class="fa-solid fa-clock-rotate-left card-icon" aria-hidden="true"></i>
+            <div class="card-info">
+                <p class="card-title" id="desc-periods">Total Periods</p>
+                <p class="card-value">{{ total_periods }}</p>
+                <small class="card-tooltip" aria-hidden="true">Total time periods scheduled</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="dashboard-charts" aria-label="Dashboard charts">
+
+        <section class="chart-container" aria-labelledby="weeklyLoadLabel">
+            <h3 id="weeklyLoadLabel">Weekly Allocation Load</h3>
+            <canvas id="weeklyLoadChart" role="img" aria-describedby="weeklyLoadDesc"></canvas>
+            <p id="weeklyLoadDesc" class="sr-only">Line chart showing allocation load per week</p>
+        </section>
+
+        <section class="chart-container" aria-labelledby="subjectsPerClassLabel">
+            <h3 id="subjectsPerClassLabel">Subjects Per Class</h3>
+            <canvas id="subjectsPerClassChart" role="img" aria-describedby="subjectsPerClassDesc"></canvas>
+            <p id="subjectsPerClassDesc" class="sr-only">Bar chart showing number of subjects per class</p>
+        </section>
+
+        <section class="chart-container wide" aria-labelledby="teacherSubjectLabel">
+            <h3 id="teacherSubjectLabel">Teachers Teaching per Subject</h3>
+            <canvas id="teacherSubjectChart" role="img" aria-describedby="teacherSubjectDesc"></canvas>
+            <p id="teacherSubjectDesc" class="sr-only">Doughnut chart showing teachers count per subject</p>
+        </section>
+
+    </div>
+
+</div>
+
+<!-- =================== PROFESSIONAL CENTERED UI CSS =================== -->
+<style>
+    :root {
+        --primary: #007bff;
+        --accent: #00eaff;
+        --glass: rgba(255, 255, 255, 0.85);
+        --radius: 20px;
+        --shadow-light: rgba(0, 0, 0, 0.1);
+        --shadow-dark: rgba(0, 0, 0, 0.2);
+        --dark-bg: #121212;
+        --dark-glass: rgba(30, 30, 30, 0.85);
+        --dark-text: #e0e0e0;
+    }
+
+    /* Reset & base */
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #ebeded, #ffffff);
+        color: #003567;
+        overflow-x: hidden;
+        transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark-mode {
+        background: var(--dark-bg);
+        color: var(--dark-text);
+    }
+
+    /* Loading screen */
+    #loading-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background: linear-gradient(135deg, #001f3f, #000814);
+        z-index: 10000;
+    }
+
+    .loader {
+        width: 70px;
+        height: 70px;
+        border: 6px solid #00eaff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-text {
+        color: white;
+        font-size: 1.3rem;
+        margin-top: 20px;
+        animation: pulse 1.5s infinite;
+        font-weight: 600;
+    }
+
+    @keyframes pulse {
+        50% {
+            opacity: 0.4;
+        }
+    }
+
+    /* Top bar with date/time and toggle */
+    .top-bar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 20px;
+        padding: 15px 30px;
+        background: var(--glass);
+        backdrop-filter: saturate(180%) blur(20px);
+        box-shadow: 0 4px 12px var(--shadow-light);
+        position: sticky;
+        top: 0;
+        z-index: 9000;
+    }
+
+    body.dark-mode .top-bar {
+        background: var(--dark-glass);
+        box-shadow: 0 4px 12px rgba(255 255 255 / 0.1);
+    }
+
+    .datetime {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #004a8f;
+    }
+
+    body.dark-mode .datetime {
+        color: #66ccff;
+    }
+
+    #darkModeToggle {
+        cursor: pointer;
+        background: var(--primary);
+        border: none;
+        color: white;
+        font-weight: 600;
+        padding: 10px 18px;
+        font-size: 1rem;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.3s ease;
+        user-select: none;
+    }
+
+    #darkModeToggle:hover,
+    #darkModeToggle:focus {
+        background: var(--accent);
+        outline: none;
+    }
+
+    /* Dashboard wrapper */
+    .dashboard-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 20px 15px 50px;
+        box-sizing: border-box;
+        animation: fadeIn 0.9s ease;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .dash-title {
+        font-size: 3rem;
+        margin-bottom: 25px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        color: #00eaff;
+        text-shadow: 0 2px 8px rgba(0, 234, 255, 0.7);
+    }
+
+    body.dark-mode .dash-title {
+        color: #66ccff;
+        text-shadow: 0 2px 10px rgba(102, 204, 255, 0.9);
+    }
+
+    /* Search */
+    .search-container {
+        width: 100%;
+        max-width: 500px;
+        margin-bottom: 40px;
+    }
+
+    #cardSearch {
+        width: 100%;
+        padding: 12px 18px;
+        font-size: 1.1rem;
+        border-radius: 30px;
+        border: 2px solid #00aaff;
+        box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.1);
+        transition: border-color 0.3s ease;
+    }
+
+    #cardSearch:focus {
+        outline: none;
+        border-color: #00eaff;
+        box-shadow: 0 0 10px #00eaffaa;
+    }
+
+    /* Cards grid */
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        justify-items: center;
+        width: 100%;
+    }
+
+    .card {
+        background: var(--glass);
+        padding: 30px 25px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+        max-width: 320px;
+        border-radius: var(--radius);
+        box-shadow: 0 6px 18px var(--shadow-light);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        cursor: pointer;
+        backdrop-filter: saturate(180%) blur(20px);
+        position: relative;
+    }
+
+    .card:hover,
+    .card:focus-visible {
+        transform: translateY(-10px);
+        box-shadow: 0 18px 38px var(--shadow-dark);
+        background: #e0f7ff;
+    }
+
+    body.dark-mode .card {
+        background: var(--dark-glass);
+        box-shadow: 0 6px 18px rgba(255 255 255 / 0.1);
+    }
+
+    body.dark-mode .card:hover,
+    body.dark-mode .card:focus-visible {
+        background: #004a8f40;
+        box-shadow: 0 18px 38px rgba(102, 204, 255, 0.6);
+    }
+
+    .card-icon {
+        font-size: 2.8rem;
+        padding: 22px;
+        border-radius: 50%;
+        background: linear-gradient(140deg, var(--primary), var(--accent));
+        color: white;
+        flex-shrink: 0;
+        box-shadow: 0 6px 14px rgba(0, 122, 255, 0.5);
+        transition: background-color 0.3s ease;
+    }
+
+    body.dark-mode .card-icon {
+        box-shadow: 0 6px 14px rgba(102, 204, 255, 0.9);
+    }
+
+    .card-title {
+        font-weight: 700;
+        color: #003567;
+        font-size: 1.2rem;
+        text-align: left;
+        margin: 0;
+    }
+
+    body.dark-mode .card-title {
+        color: var(--dark-text);
+    }
+
+    .card-value {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #004a8f;
+    }
+
+    body.dark-mode .card-value {
+        color: #66ccff;
+    }
+
+    .card-tooltip {
+        display: block;
+        margin-top: 6px;
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    body.dark-mode .card-tooltip {
+        color: #aaa;
+    }
+
+    /* Charts grid */
+    .dashboard-charts {
+        margin-top: 50px;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+        gap: 35px;
+        width: 100%;
+    }
+
+    .chart-container {
+        background: var(--glass);
+        padding: 28px 28px 32px;
+        border-radius: var(--radius);
+        box-shadow: 0 6px 22px var(--shadow-light);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+        backdrop-filter: saturate(180%) blur(20px);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-container:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 18px 38px var(--shadow-dark);
+    }
+
+    body.dark-mode .chart-container {
+        background: var(--dark-glass);
+        box-shadow: 0 6px 22px rgba(255 255 255 / 0.1);
+    }
+
+    body.dark-mode .chart-container:hover {
+        background: #004a8f30;
+        box-shadow: 0 18px 38px rgba(102, 204, 255, 0.6);
+    }
+
+    .chart-container h3 {
+        margin-bottom: 20px;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #00aaff;
+    }
+
+    body.dark-mode .chart-container h3 {
+        color: #66ccff;
+    }
+
+    /* Wide charts span two columns on desktop */
+    .chart-container.wide {
+        grid-column: span 2;
+        min-height: 420px;
+    }
+
+    @media (max-width: 900px) {
+        .chart-container.wide {
+            grid-column: span 1;
+            min-height: 320px;
+        }
+    }
+
+    /* Fade animations */
+    .fade-start {
+        opacity: 0;
+    }
+
+    .fade-end {
+        opacity: 1;
+        transition: opacity 0.7s ease;
+    }
+
+    /* Screen reader only */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        border: 0;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 600px) {
+        .dash-title {
+            font-size: 2.2rem;
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+        }
+
+        #darkModeToggle {
+            font-size: 0.9rem;
+            padding: 8px 14px;
+        }
+    }
+</style>
+
+<!-- =================== JS =================== -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Loading screen fadeout & fade-in dashboard
+    window.onload = function () {
+        const loader = document.getElementById("loading-screen");
+        loader.style.opacity = "0";
+        setTimeout(() => loader.style.display = "none", 600);
+        document.querySelector('.dashboard-wrapper').classList.add('fade-end');
+    }
+
+    // Date/time display
+    function updateDateTime() {
+        const dt = new Date();
+        const options = {
+            weekday: 'short', year: 'numeric', month: 'short',
+            day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
+        };
+        document.querySelector('.datetime').textContent = dt.toLocaleDateString(undefined, options);
+    }
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+
+    // Dark mode toggle
+    const toggleBtn = document.getElementById('darkModeToggle');
+    toggleBtn.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        toggleBtn.setAttribute('aria-pressed', isDark);
+        toggleBtn.innerHTML = isDark
+            ? '<i class="fa-solid fa-sun"></i> Light Mode'
+            : '<i class="fa-solid fa-moon"></i> Dark Mode';
+    });
+
+    // Search filter for cards
+    document.getElementById('cardSearch').addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        document.querySelectorAll('.dashboard-cards .card').forEach(card => {
+            const title = card.querySelector('.card-title').textContent.toLowerCase();
+            card.style.display = title.includes(query) ? 'flex' : 'none';
+        });
+    });
+
+    // Charts initialization
+    document.addEventListener('DOMContentLoaded', () => {
+        makeChart("weeklyLoadChart", "line", weekly_days, weekly_load);
+        makeChart("subjectsPerClassChart", "bar", classes, subjects_count);
+        makeChart("teacherSubjectChart", "doughnut", subject_names, teachers_per_subject);
+    });
+
+    function makeChart(id, type, labels, data) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+
+        new Chart(ctx, {
+            type: type,
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: "",
+                    data: data,
+                    borderWidth: 2,
+                    backgroundColor: type === "doughnut"
+                        ? generateColors(data.length)
+                        : 'rgba(0, 122, 255, 0.7)',
+                    borderColor: type === "doughnut" ? '#fff' : 'rgba(0, 122, 255, 1)',
+                    fill: type === 'line' ? true : false,
+                    tension: 0.3,
+                    hoverBackgroundColor: 'rgba(0, 234, 255, 0.8)',
+                    hoverBorderColor: '#00eaff',
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: type === 'doughnut',
+                        position: 'bottom',
+                        labels: {
+                            color: document.body.classList.contains('dark-mode') ? '#ccc' : '#333',
+                            font: { weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0,0,0,0.75)',
+                        titleFont: { weight: '700' },
+                        bodyFont: { weight: '600' },
+                        cornerRadius: 6,
+                    }
+                },
+                scales: type !== 'doughnut' ? {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: document.body.classList.contains('dark-mode') ? '#ccc' : '#333' },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    },
+                    x: {
+                        ticks: { color: document.body.classList.contains('dark-mode') ? '#ccc' : '#333' },
+                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    }
+                } : {}
+            }
+        });
+    }
+
+    // Utility: Generate pastel colors for doughnut chart slices
+    function generateColors(count) {
+        const baseColors = [
+            '#00aaff', '#00eaff', '#004a8f', '#008ecc',
+            '#006fba', '#0097cf', '#005e99', '#00b8ff'
+        ];
+        let colors = [];
+        for (let i = 0; i < count; i++) {
+            colors.push(baseColors[i % baseColors.length]);
+        }
+        return colors;
+    }
+</script>
+
+{% endblock %}

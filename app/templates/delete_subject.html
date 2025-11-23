@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Delete Subject{% endblock %}
+
+{% block content %}
+<div class="management-page">
+    <h2>Delete Subject</h2>
+
+    <p>Are you sure you want to delete the subject: <strong>{{ subject.name }}</strong> (Code: {{ subject.code }})?</p>
+
+    <form method="POST" action="{{ url_for('main.delete_subject', id=subject.id) }}">
+        {{ csrf_token() }}
+        <button type="submit" class="btn btn-danger">Yes, Delete</button>
+        <a href="{{ url_for('main.manage_subjects') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

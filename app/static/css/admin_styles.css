@@ -1,0 +1,264 @@
+:root {
+    --blue: #1e40af;
+    --blue-600: #2563eb;
+    --muted: #6b7280;
+    --card-bg: #fff;
+    --page-bg: #f4f7fb;
+    --accent: #0ea5e9;
+}
+
+* {
+    box-sizing: border-box
+}
+
+body {
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    margin: 0;
+    background: var(--page-bg);
+    color: #0f172a
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: white;
+    border-bottom: 1px solid #e6eefc
+}
+
+.topbar .brand a {
+    color: var(--blue);
+    font-weight: 700;
+    text-decoration: none
+}
+
+.top-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center
+}
+
+.user-badge {
+    background: #eef2ff;
+    color: var(--blue);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-weight: 600
+}
+
+.btn {
+    background: var(--blue-600);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    border: 0;
+    cursor: pointer
+}
+
+.btn.ghost {
+    background: transparent;
+    color: var(--blue-600);
+    border: 1px solid #e6eefc
+}
+
+.btn.small {
+    padding: 6px 10px;
+    font-size: 0.95rem
+}
+
+.container {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 24px auto
+}
+
+.sidebar {
+    width: 220px;
+    background: white;
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #eaf2ff;
+    height: calc(100vh - 160px);
+    position: sticky;
+    top: 20px
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 10px 12px;
+    color: var(--muted);
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 6px
+}
+
+.sidebar nav a.active,
+.sidebar nav a:hover {
+    background: linear-gradient(90deg, #eef2ff, #f8fbff);
+    color: var(--blue)
+}
+
+.main {
+    flex: 1;
+    min-height: 60vh
+}
+
+.card {
+    background: var(--card-bg);
+    padding: 18px;
+    border-radius: 10px;
+    border: 1px solid #e8f0ff;
+    margin-bottom: 16px
+}
+
+.page-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px
+}
+
+.page-title h1 {
+    margin: 0;
+    color: var(--blue)
+}
+
+.controls {
+    display: flex;
+    gap: 8px;
+    align-items: center
+}
+
+.search-input {
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #dde9ff;
+    min-width: 220px
+}
+
+.select-page {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #dde9ff
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px
+}
+
+.table th,
+.table td {
+    padding: 10px;
+    border-bottom: 1px solid #f1f6ff;
+    text-align: left
+}
+
+.table th {
+    background: #fbfdff;
+    color: var(--muted);
+    font-weight: 700
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+    flex: 1;
+    min-width: 170px
+}
+
+label {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 6px
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select,
+textarea,
+input[type="time"] {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e6eefc;
+    background: white
+}
+
+.form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px
+}
+
+.flash-wrap {
+    margin-bottom: 12px
+}
+
+.flash {
+    padding: 10px;
+    border-radius: 8px
+}
+
+.flash-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #d1fae5
+}
+
+.flash-danger {
+    background: #ffeff0;
+    color: #7f1d1d;
+    border: 1px solid #fee2e2
+}
+
+.flash-info {
+    background: #eef2ff;
+    color: #0b61d4;
+    border: 1px solid #dbedff
+}
+
+.pager {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px
+}
+
+.pager button {
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid #e6eefc;
+    background: white;
+    cursor: pointer
+}
+
+.pager button.active {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue)
+}
+
+.small-muted {
+    color: var(--muted);
+    font-size: 0.9rem
+}
+
+.footer {
+    padding: 16px;
+    text-align: center;
+    color: var(--muted);
+    margin-top: 20px
+}
