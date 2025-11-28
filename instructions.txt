@@ -14,9 +14,9 @@ http://127.0.0.1:5000/login
 
 Login using:
 
-Username: maahad-istiqama
+Username: admin
 
-Password: maahadpassword
+Password: admin123
 
 
 from app import db

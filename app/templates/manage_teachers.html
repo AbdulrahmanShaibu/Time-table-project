@@ -60,7 +60,12 @@
 
   <div class="controls">
     <a class="btn btn-success" href="{{ url_for('main.add_teacher') }}">Add Teacher</a>
+    <a class="btn btn-primary" href="{{ url_for('main.download_all_teachers_pdf') }}">
+      Download All Teachers PDF
+    </a>
+
   </div>
+
 </div>
 
 <div class="card table-wrap">
@@ -84,6 +89,7 @@
         <th>Email</th>
         <th>Qualification</th>
         <th>Max/day</th>
+        <th>Max/Week</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -95,6 +101,7 @@
         <td>{{ t.email or '' }}</td>
         <td>{{ t.qualification }}</td>
         <td>{{ t.max_periods_per_day }}</td>
+        <td>{{ t.max_periods_per_week}}</td>
         <td>
           <a class="btn btn-primary" href="{{ url_for('main.edit_teacher', teacher_id=t.id) }}">Edit</a>
           <form id="delete-teacher-{{ t.id }}" action="{{ url_for('main.delete_teacher', teacher_id=t.id) }}"

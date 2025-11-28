@@ -49,9 +49,10 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Name</th>
-                <th>Level</th>
-                <th>Assigned</th>
+                <th>Class Name</th>
+                <th>Level Type</th>
+                <th>Assigned Teacher</th>
+                <th>Assigned Subject</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -60,8 +61,9 @@
             <tr>
                 <td>{{ c.id }}</td>
                 <td>{{ c.name }}</td>
-                <td>{{ c.education_level.name if c.education_level else '' }}</td>
+                <td>{{ c.education_level.level_type if c.education_level else '' }}</td>
                 <td>{{ c.assigned_teacher.full_name if c.assigned_teacher else '—' }}</td>
+                <td>repeated logic</td>
                 <td>
                     <a class="btn btn-primary" href="{{ url_for('main.edit_class', class_id=c.id) }}">Edit</a>
                     <form id="delete-class-{{ c.id }}" action="{{ url_for('main.delete_class', class_id=c.id) }}"

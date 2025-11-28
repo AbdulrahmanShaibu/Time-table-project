@@ -70,7 +70,7 @@ class Subject(db.Model):
     school_id = db.Column(db.Integer, db.ForeignKey("schools.id", ondelete="CASCADE"), nullable=False)
     name = db.Column(db.String(150), nullable=False)
     code = db.Column(db.String(10), nullable=False)
-    subject_type = db.Column(db.Enum('core', 'elective', 'practical', 'lab', name='subject_types'), nullable=False)
+    subject_type = db.Column(db.Enum('core', 'elective', 'practical', 'lab', 'theory', name='subject_types'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     school = db.relationship("School", back_populates="subjects")
@@ -210,3 +210,16 @@ class PeriodTemplate(db.Model):
     name = db.Column(db.String(100), nullable=False)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
+
+
+from sqlalchemy.orm import joinedload
+
+# class_subject_assignments = (
+#     ClassSubjectAssignment.query
+#     .options(
+#         joinedload(ClassSubjectAssignment.classes),
+#         joinedload(ClassSubjectAssignment.subjects),
+#         joinedload(ClassSubjectAssignment.teachers)
+#     )
+#     .all()
+# )

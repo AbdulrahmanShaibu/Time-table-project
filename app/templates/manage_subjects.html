@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Subjects{% endblock %}
 {% block content %}
+
 <div class="card page-title">
     <div style="
-    display: flex; align-items: flex-start; gap: 18px;
-    background:#fff; border:1px solid #e6e8ec; border-left:5px solid #7c3aed;
-    padding:22px 24px; border-radius:14px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:22px;
-">
+        display:flex; align-items:flex-start; gap:18px;
+        background:#fff; border:1px solid #e5e7eb; border-left:5px solid #7c3aed;
+        padding:22px 24px; border-radius:14px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:22px;
+    ">
         <div style="
-      background:#7c3aed; width:48px; height:48px; border-radius:12px;
-      display:flex; align-items:center; justify-content:center;
-      box-shadow:0 3px 8px rgba(124,58,237,0.3);
-  ">
+            background:#7c3aed; width:48px; height:48px; border-radius:12px;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 3px 8px rgba(124,58,237,0.35);
+        ">
             <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
                 <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11A2.5 2.5 0 0 0 20 19.5V6H4v13.5Z" />
                 <path d="M4 6V4h16v2" />
@@ -20,10 +21,12 @@
         </div>
 
         <div>
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">Subjects Management</h1>
+            <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">
+                Subjects Management
+            </h1>
             <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;">
-                Manage academic subjects offered in the school. Add new subjects, update their details, and organize
-                them for class timetables.
+                Manage academic subjects offered in the school. Add, update, and organize subjects
+                for class timetable planning.
             </p>
         </div>
     </div>
@@ -34,8 +37,10 @@
 </div>
 
 <div class="card table-wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
         <input class="search-input" placeholder="Search subjects..." />
+
         <div>
             <label class="small-muted">Per page</label>
             <select class="select-page">
@@ -47,30 +52,40 @@
     </div>
 
     <table class="table data-table">
-        <thead>
-            <tr>
+        <thead style="background-color: #2563eb;">
+            <tr style="background:#2563eb;">
                 <th>ID</th>
-                <th>Code</th>
-                <th>Name</th>
+                <th>Subject Code</th>
+                <th>Subject Name</th>
                 <th>Type</th>
-                <th>Periods/wk</th>
-                <th>Actions</th>
+                <th>Update</th>
+                <th>Delete</th>
             </tr>
         </thead>
+
         <tbody>
             {% for s in subjects %}
             <tr>
                 <td>{{ s.id }}</td>
                 <td>{{ s.code }}</td>
                 <td>{{ s.name }}</td>
-                <td>{{ s.subject_type }}</td>
-                <td>{{ s.periods_per_week }}</td>
+                <td style="text-transform:capitalize">{{ s.subject_type }}</td>
+
                 <td>
-                    <a class="btn btn-primary" href="{{ url_for('main.edit_subject', subject_id=s.id) }}">Edit</a>
+                    <a class="btn btn-primary" href="{{ url_for('main.edit_subject', subject_id=s.id) }}">
+                        Edit
+                    </a>
+                </td>
+
+                <td>
                     <form id="delete-subject-{{ s.id }}" action="{{ url_for('main.delete_subject', subject_id=s.id) }}"
                         method="post" style="display:inline">
+
                         <button type="button" class="btn btn-danger"
-                            onclick="confirmDelete('delete-subject-{{ s.id }}','Delete this subject?')">Delete</button>
+                            onclick="confirmDelete('delete-subject-{{ s.id }}','Delete this subject?')">
+                            Delete
+                        </button>
+
                     </form>
                 </td>
             </tr>
@@ -87,7 +102,6 @@
             padding: 14px 18px;
             font-size: 15px;
             color: #1f2937;
-            /* Neutral dark text */
             background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
 
             border: 1px solid #d1d5db;
@@ -95,27 +109,20 @@
 
             outline: none;
             transition: all 0.25s ease;
-
-            /* Subtle inner shadow for a polished effect */
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
         }
 
         .search-input:focus {
-            background: #ffffff;
-
+            background: #fff;
             border-color: #2563eb;
-            /* Deep professional blue */
             box-shadow:
                 0 0 0 4px rgba(37, 99, 235, 0.18),
-                /* Outer glow */
                 inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            /* Retain inner shadow */
         }
 
         .search-input:hover:not(:focus) {
-            background: #ffffff;
+            background: #fff;
             border-color: #93c5fd;
-            /* Soft hover highlight */
         }
 
         .search-input::placeholder {
@@ -124,11 +131,12 @@
             opacity: 0.8;
         }
 
-        /* Optional: smooth placeholder transition */
         .search-input:focus::placeholder {
             opacity: 0.4;
-            transition: opacity 0.2s ease;
+            transition: opacity .2s ease;
         }
     </style>
+
 </div>
+
 {% endblock %}

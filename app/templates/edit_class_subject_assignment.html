@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Edit Assignment{% endblock %}
+{% block content %}
+
+<div class="card page-title">
+    <div style="
+        display:flex;align-items:flex-start;gap:18px;
+        background:#fff;border:1px solid #e6e8ec;border-left:5px solid #2563eb;
+        padding:22px 24px;border-radius:14px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;">
+
+        <!-- Icon -->
+        <div style="
+          background:#2563eb;width:48px;height:48px;border-radius:12px;
+          display:flex;align-items:center;justify-content:center;
+          box-shadow:0 3px 8px rgba(37,99,235,0.3);">
+            <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
+                <path d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </div>
+
+        <div>
+            <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">
+                Edit Class–Subject–Teacher Assignment
+            </h1>
+            <p style="margin:8px 0 0;font-size:15px;color:#4b5563;">
+                Update the teacher assigned to this subject in this class.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="padding:24px;">
+
+    <form method="POST">
+        <!-- Class -->
+        <div class="mb-3">
+            <label class="form-label">Class</label>
+            <select name="class_id" class="form-select" required>
+                {% for cls in classes %}
+                <option value="{{ cls.id }}"
+                    {% if cls.id == assignment.class_id %}selected{% endif %}>
+                    {{ cls.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Subject -->
+        <div class="mb-3">
+            <label class="form-label">Subject</label>
+            <select name="subject_id" class="form-select" required>
+                {% for sub in subjects %}
+                <option value="{{ sub.id }}"
+                    {% if sub.id == assignment.subject_id %}selected{% endif %}>
+                    {{ sub.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Teacher -->
+        <div class="mb-3">
+            <label class="form-label">Teacher</label>
+            <select name="teacher_id" class="form-select" required>
+                {% for t in teachers %}
+                <option value="{{ t.id }}"
+                    {% if t.id == assignment.teacher_id %}selected{% endif %}>
+                    {{ t.first_name }} {{ t.last_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Update Assignment</button>
+        <a href="{{ url_for('main.manage_class_subject_assignment') }}" class="btn btn-danger">
+            Cancel
+        </a>
+    </form>
+</div>
+
+{% endblock %}

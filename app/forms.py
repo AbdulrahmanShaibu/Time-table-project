@@ -27,7 +27,7 @@ class TeacherForm(FlaskForm):
     )
     max_periods_per_day = IntegerField("Max periods/day", validators=[Optional(), NumberRange(min=1)])
     max_periods_per_week = IntegerField("Max periods/week", validators=[Optional(), NumberRange(min=1)])
-    school_id = SelectField("School", coerce=int, validators=[Optional()])
+    school_id = SelectField("School", coerce=int, validators=[DataRequired()])
     submit = SubmitField("Save")
 
 class SchoolForm(FlaskForm):
@@ -59,7 +59,6 @@ class SubjectForm(FlaskForm):
         choices=[('core', 'Core'), ('elective', 'Elective'), ('practical', 'Practical'), ('lab', 'Lab')],
         validators=[DataRequired()]
     )
-    periods_per_week = IntegerField("Periods per Week", validators=[DataRequired(), NumberRange(min=1)])
     school_id = SelectField("School", coerce=int, validators=[Optional()])
     submit = SubmitField("Save")
 

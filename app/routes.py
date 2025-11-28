@@ -519,6 +519,13 @@ from .forms import (
     ClassSubjectAssignmentForm, RoomForm, PeriodTemplateForm
 )
 from .imports import db
+from flask import send_file
+from io import BytesIO
+
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
 
 main_bp = Blueprint("main", __name__)
 
@@ -542,11 +549,57 @@ def logout():
     flash('Logged out successfully', 'success')
     return redirect(url_for('main.login'))
 
+# @main_bp.route('/')
+# @login_required
+# def admin_dashboard():
+#     school = School.query.first()   # or get current user's school
+#     return render_template('admin_dashboard.html', school=school)
+
 @main_bp.route('/')
 @login_required
 def admin_dashboard():
     school = School.query.first()   # or get current user's school
-    return render_template('admin_dashboard.html', school=school)
+    weekly_days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    weekly_load = [5, 7, 6, 8, 7]
+
+    classes = [c.name for c in ClassRoom.query.all()]
+    
+    # Count subjects per class (assuming a relationship ClassRoom.subjects)
+    subjects_count = []
+    for c in ClassRoom.query.all():
+        if hasattr(c, 'subjects'):
+            subjects_count.append(c.subjects.count())
+        else:
+            subjects_count.append(0)  # fallback if no relationship
+
+    subject_names = [s.name for s in Subject.query.all()]
+    
+    # Count teachers per subject (assuming Subject.teachers relationship)
+    teachers_per_subject = []
+    for s in Subject.query.all():
+        if hasattr(s, 'teachers'):
+            teachers_per_subject.append(s.teachers.count())
+        else:
+            teachers_per_subject.append(0)
+
+    # Total counts
+    total_teachers = Teacher.query.count()
+    total_subjects = Subject.query.count()
+    total_classes = ClassRoom.query.count()
+    total_periods = Timetable.query.count()
+
+    return render_template('admin_dashboard.html',
+                           total_teachers=total_teachers,
+                           total_subjects=total_subjects,
+                           total_classes=total_classes,
+                           total_periods=total_periods,
+                           weekly_days=weekly_days,
+                           weekly_load=weekly_load,
+                           classes=classes,
+                           subjects_count=subjects_count,
+                           subject_names=subject_names,
+                           teachers_per_subject=teachers_per_subject)
+
 
 # @main_bp.route("/admin/dashboard")
 # def admin_dashboard():
@@ -627,7 +680,7 @@ def add_teacher():
             last_name=form.last_name.data,
             email=form.email.data,
             qualification=form.qualification.data,
-            max_periods_per_day=form.max_periods_per_day.data or 6,
+            max_periods_per_day=form.max_periods_per_day.data if form.max_periods_per_day.data else 6,
             max_periods_per_week=form.max_periods_per_week.data or 30,
             school_id=form.school_id.data
         )
@@ -665,6 +718,123 @@ def delete_teacher(teacher_id):
     flash("Teacher deleted", "success")
     return redirect(url_for('main.manage_teachers'))
 
+@main_bp.route('/teachers/download_all_pdf', methods=['GET'])
+@login_required
+def download_all_teachers_pdf():
+
+    from io import BytesIO
+    from reportlab.lib.pagesizes import landscape, letter
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet
+    from flask import current_app, send_file
+    import os
+
+    teachers = Teacher.query.all()
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=landscape(letter),
+        leftMargin=30,
+        rightMargin=30,
+        topMargin=30,
+        bottomMargin=20
+    )
+
+    styles = getSampleStyleSheet()
+    elements = []
+
+    # ----------------------------------------------------------
+    # 1. Insert Logo (Centered)
+    # ----------------------------------------------------------
+    logo_path = os.path.join(current_app.root_path, "static", "images", "realistic-school.png")
+
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=70, height=70)
+        logo.hAlign = 'CENTER'
+        elements.append(logo)
+        elements.append(Spacer(1, 8))
+
+    # ----------------------------------------------------------
+    # 2. Add Title
+    # ----------------------------------------------------------
+    title = Paragraph("<b>All Teachers – Professional Report</b>", styles["Title"])
+    elements.append(title)
+    elements.append(Spacer(1, 12))
+
+    # ----------------------------------------------------------
+    # 3. Prepare Table Data
+    # ----------------------------------------------------------
+    data = [["ID", "Name", "Email", "Qualification", "School", "Max/Day", "Max/Week"]]
+
+    for t in teachers:
+        data.append([
+            t.id,
+            f"{t.first_name} {t.last_name}",
+            t.email,
+            t.qualification,
+            t.school.name if t.school else "N/A",
+            t.max_periods_per_day,
+            t.max_periods_per_week
+        ])
+
+    # ----------------------------------------------------------
+    # 4. Table Styling (Academic Look)
+    # ----------------------------------------------------------
+    table = Table(data, repeatRows=1)
+
+    # Academic color palette (soft blue + grey)
+    header_color = colors.HexColor("#1E3A8A")      # deep academic blue
+    header_text = colors.white
+    row_alt_1 = colors.HexColor("#EDF2F7")         # light grey/blue
+    row_alt_2 = colors.white
+
+    style = [
+        # Header
+        ('BACKGROUND', (0, 0), (-1, 0), header_color),
+        ('TEXTCOLOR', (0, 0), (-1, 0), header_text),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+
+        # Body cells
+        ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('VALIGN', (0, 1), (-1, -1), 'MIDDLE'),
+
+        # Table grid
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+
+        # Padding
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('TOPPADDING', (0, 0), (-1, -1), 4),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+    ]
+
+    # Alternating row colors
+    for i in range(1, len(data)):
+        bg = row_alt_1 if i % 2 == 0 else row_alt_2
+        style.append(('BACKGROUND', (0, i), (-1, i), bg))
+
+    table.setStyle(TableStyle(style))
+
+    elements.append(table)
+
+    # ----------------------------------------------------------
+    # 5. Build PDF
+    # ----------------------------------------------------------
+    doc.build(elements)
+
+    buffer.seek(0)
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name="all_teachers.pdf",
+        mimetype="application/pdf"
+    )
 
 # CLASS CRUD
 @main_bp.route('/manage_classes')
@@ -735,36 +905,42 @@ def manage_subjects():
 def add_subject():
     form = SubjectForm()
     form.school_id.choices = [(s.id, s.name) for s in School.query.order_by(School.name).all()]
+
     if form.validate_on_submit():
         subject = Subject(
-            code=form.code.data,
-            name=form.name.data,
-            subject_type=form.subject_type.data.lower(),
-            periods_per_week=form.periods_per_week.data,
+            code=form.code.data.strip(),
+            name=form.name.data.strip(),
+            subject_type=form.subject_type.data.strip().lower(),
             school_id=form.school_id.data
         )
         db.session.add(subject)
         db.session.commit()
         flash("Subject added successfully", "success")
         return redirect(url_for('main.manage_subjects'))
+
     return render_template('subjects/add_edit.html', form=form, action="Add")
+
 
 @main_bp.route('/subjects/edit/<int:subject_id>', methods=['GET', 'POST'])
 @login_required
 def edit_subject(subject_id):
     subject = Subject.query.get_or_404(subject_id)
+
     form = SubjectForm(obj=subject)
     form.school_id.choices = [(s.id, s.name) for s in School.query.order_by(School.name).all()]
+
     if form.validate_on_submit():
-        subject.code = form.code.data
-        subject.name = form.name.data
-        subject.subject_type = form.subject_type.data.lower()
-        subject.periods_per_week = form.periods_per_week.data
+        subject.code = form.code.data.strip()
+        subject.name = form.name.data.strip()
+        subject.subject_type = form.subject_type.data.strip().lower()
         subject.school_id = form.school_id.data
+
         db.session.commit()
         flash("Subject updated successfully", "success")
         return redirect(url_for('main.manage_subjects'))
-    return render_template('subjects/add_edit.html', form=form, action="Edit")
+
+    return render_template('subjects/add_edit.html', form=form, action="Update")
+
 
 @main_bp.route('/subjects/delete/<int:subject_id>', methods=['POST'])
 @login_required
@@ -940,3 +1116,192 @@ def delete_timetable(timetable_id):
     return redirect(url_for('main.list_timetables'))
 
 
+
+# counting logic
+from flask import jsonify
+
+@main_bp.route('/api/counts')
+@login_required
+def get_counts():
+    total_teachers = Teacher.query.count()
+    total_subjects = Subject.query.count()
+    total_classes = ClassRoom.query.count()
+    total_periods = Timetable.query.count()
+
+    return jsonify({
+        "total_teachers": total_teachers,
+        "total_subjects": total_subjects,
+        "total_classes": total_classes,
+        "total_periods": total_periods,
+    })
+
+@main_bp.route('/admin/overview')
+@login_required
+def admin_overview():
+    total_teachers = Teacher.query.count()
+    total_subjects = Subject.query.count()
+    total_classes = ClassRoom.query.count()
+    total_periods = Timetable.query.count()
+
+    # Prepare data for charts (mock or query real data as needed)
+    weekly_days = ["Mon", "Tue", "Wed", "Thu", "Fri"]
+    weekly_load = [5, 7, 6, 8, 7]  # Example data for weekly allocation load
+
+    classes = [c.name for c in ClassRoom.query.all()]
+    subjects_count = []
+    for c in ClassRoom.query.all():
+        count = c.subjects.count() if hasattr(c, 'subjects') else 3  # Example fallback
+        subjects_count.append(count)
+
+    subject_names = [s.name for s in Subject.query.all()]
+    teachers_per_subject = []
+    for s in Subject.query.all():
+        count = s.teachers.count() if hasattr(s, 'teachers') else 2  # Example fallback
+        teachers_per_subject.append(count)
+
+    return render_template('admin_dashboard.html',
+                           total_teachers=total_teachers,
+                           total_subjects=total_subjects,
+                           total_classes=total_classes,
+                           total_periods=total_periods,
+                           weekly_days=weekly_days,
+                           weekly_load=weekly_load,
+                           classes=classes,
+                           subjects_count=subjects_count,
+                           subject_names=subject_names,
+                           teachers_per_subject=teachers_per_subject)
+
+@main_bp.route('/manage_class_subject_assignment')
+@login_required
+def manage_class_subject_assignment():
+     class_subject_assignments = (
+        ClassSubjectAssignment.query
+        .options(
+            joinedload(ClassSubjectAssignment.classroom),
+            joinedload(ClassSubjectAssignment.subject),
+            joinedload(ClassSubjectAssignment.teacher)
+        )
+        .all()
+    )
+
+     return render_template(
+        'manage_class_subject_assignment.html',
+        class_subject_assignments=class_subject_assignments
+    )
+
+
+# @main_bp.route('/add_teacher_class_subject', methods=['GET', 'POST'])
+# @login_required
+# def add_teacher_class_subject():
+#     classes = ClassRoom.query.all()
+#     subjects = Subject.query.all()
+#     teachers = Teacher.query.all()
+
+#     if request.method == 'POST':
+#         class_id = request.form['class_id']
+#         subject_id = request.form['subject_id']
+#         teacher_id = request.form['teacher_id']
+
+#         new_assignment = ClassSubjectAssignment(
+#             class_id=class_id,
+#             subject_id=subject_id,
+#             teacher_id=teacher_id
+#         )
+#         db.session.add(new_assignment)
+#         db.session.commit()
+
+#         flash('Assignment created successfully', 'success')
+#         return redirect(url_for('main.manage_class_subject_assignment'))
+
+#     return render_template(
+#         'add_teacher_class_subject.html',
+#         classes=classes,
+#         subjects=subjects,
+#         teachers=teachers
+#     )
+
+@main_bp.route("/add_teacher_class_subject", methods=["GET", "POST"])
+def add_teacher_class_subject():
+    form = ClassSubjectAssignmentForm()
+    # populate select fields
+    classes = ClassRoom.query.order_by(ClassRoom.name).all()
+    subjects = Subject.query.order_by(Subject.name).all()
+    teachers = Teacher.query.order_by(Teacher.first_name).all()
+
+    form.class_id.choices = [(c.id, c.name) for c in classes]
+    form.subject_id.choices = [(s.id, f"{s.name} ({s.code})") for s in subjects]
+    form.teacher_id.choices = [(t.id, t.full_name) for t in teachers]
+
+    if form.validate_on_submit():
+        # prevent duplicates: same class + subject
+        existing = ClassSubjectAssignment.query.filter_by(class_id=form.class_id.data, subject_id=form.subject_id.data).first()
+        if existing:
+            flash("That class already has this subject assigned. Edit the existing assignment instead.", "warning")
+            return redirect(url_for("main.manage_class_subject_assignment"))
+
+        assignment = ClassSubjectAssignment(
+            class_id=form.class_id.data,
+            subject_id=form.subject_id.data,
+            teacher_id=form.teacher_id.data
+        )
+        db.session.add(assignment)
+        db.session.commit()
+        flash("Assignment added.", "success")
+        return redirect(url_for("main.manage_class_subject_assignment"))
+
+    return render_template("assignment_form.html", form=form, title="Add Assignment")
+
+
+@main_bp.route('/edit-class-subject-assignment/<int:assignment_id>', methods=['GET', 'POST'])
+@login_required
+def edit_class_subject_assignment(assignment_id):
+    assignment = ClassSubjectAssignment.query.get_or_404(assignment_id)
+
+    classes = ClassRoom.query.all()
+    subjects = Subject.query.all()
+    teachers = Teacher.query.all()
+
+    if request.method == "POST":
+        assignment.class_id = request.form['class_id']
+        assignment.subject_id = request.form['subject_id']
+        assignment.teacher_id = request.form['teacher_id']
+
+        db.session.commit()
+        flash("Assignment updated successfully!", "success")
+        return redirect(url_for('main.list_class_subject_assignments'))
+
+    return render_template('edit_class_subject_assignment.html',
+                           assignment=assignment,
+                           classes=classes,
+                           subjects=subjects,
+                           teachers=teachers)
+
+
+@main_bp.route('/delete-class-subject-assignment/<int:assignment_id>', methods=['POST'])
+@login_required
+def delete_class_subject_assignment(assignment_id):
+    assignment = ClassSubjectAssignment.query.get_or_404(assignment_id)
+    db.session.delete(assignment)
+    db.session.commit()
+
+    flash("Assignment deleted!", "success")
+    return redirect(url_for('main.list_class_subject_assignments'))
+
+from sqlalchemy.orm import joinedload
+@main_bp.route('/class-subject-assignments')
+@login_required
+def list_class_subject_assignments():
+    # assignments = ClassSubjectAssignment.query.all()
+     # load relationships to prevent N+1 queries
+    assignments = (
+        ClassSubjectAssignment.query
+        .options(
+            joinedload(ClassSubjectAssignment.classroom),
+            joinedload(ClassSubjectAssignment.subject),
+            joinedload(ClassSubjectAssignment.teacher)
+        )
+        .order_by(ClassSubjectAssignment.id)
+        .all()
+    )
+    return render_template('list_class_subject_assignments.html',
+                           class_subject_assignments=assignments)

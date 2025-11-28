@@ -9,11 +9,10 @@
             <div class="form-field">{{ form.code.label }} {{ form.code() }}</div>
             <div class="form-field">{{ form.name.label }} {{ form.name() }}</div>
             <div class="form-field">{{ form.subject_type.label }} {{ form.subject_type() }}</div>
-            <div class="form-field">{{ form.periods_per_week.label }} {{ form.periods_per_week() }}</div>
         </div>
         <div class="form-actions">
-            <button class="btn" type="submit">{{ action }}</button>
-            <a class="btn ghost" href="{{ url_for('main.manage_subjects') }}">Cancel</a>
+            <button class="btn btn-success" type="submit">{{ action }}</button>
+            <a class="btn btn-danger" href="{{ url_for('main.manage_subjects') }}">Cancel</a>
         </div>
     </form>
 </div>

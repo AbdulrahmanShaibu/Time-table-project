@@ -1,22 +1,342 @@
-{% extends "base.html" %}
-{% block title %}Login - School Timetable{% endblock %}
-
 {% block content %}
-<div class="login-container">
-    <h2>Admin Login</h2>
-    <form method="POST" action="{{ url_for('main.login') }}">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.username.label }}
-            {{ form.username(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.password.label }}
-            {{ form.password(class="form-control") }}
-        </div>
-        <div class="form-group">
-            {{ form.submit(class="btn btn-primary") }}
-        </div>
-    </form>
+
+<!-- ⭐ HERO BANNER WITH WAVES -->
+<div class="hero-banner">
+    <h1>School Timetable System</h1>
+    <h2>Automated, Conflict-Free, Intelligent Scheduling</h2>
+
+    <!-- Animated Waves -->
+    <div class="wave layer1"></div>
+    <div class="wave layer2"></div>
+    <div class="wave layer3"></div>
 </div>
+
+
+<div class="auth-wrapper">
+
+    <!-- Information / Branding Panel -->
+    <div class="info-section card-3d">
+        <div class="info-header">
+            <h1><i class="fas fa-calendar-alt"></i> School Timetable System</h1>
+            <h2>Maahad Istiqama – Tunguu, Zanzibar</h2>
+        </div>
+
+        <p class="purpose">
+            <strong>Purpose:</strong> Generate realistic, conflict-free timetables for classes and teachers,
+            exportable to PDF/Excel, with an intelligent admin panel and API.
+        </p>
+
+        <div class="features-container">
+            <h3>Key Features</h3>
+            <ul class="feature-list">
+                <li><i class="fas fa-cogs"></i> Advanced Admin Panel: Classes, subjects, teachers, rooms, periods</li>
+                <li><i class="fas fa-file-import"></i> Excel Import/Export for school data</li>
+                <li><i class="fas fa-robot"></i> AI-assisted timetable generator</li>
+                <li><i class="fas fa-check-circle"></i> Supports capacity, blackout times, breaks, priorities</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Login Panel -->
+    <div class="login-section">
+        <div class="login-card card-3d">
+
+            <img src="{{ url_for('static', filename='images/realistic-school.png') }}" alt="School"
+                class="brand-image" />
+
+            <form method="POST" action="{{ url_for('main.login') }}" class="login-form" autocomplete="off">
+                {{ form.hidden_tag() }}
+
+                <label for="username">{{ form.username.label.text }}</label>
+                {{ form.username(class="form-control", id="username") }}
+
+                <label for="password">{{ form.password.label.text }}</label>
+                {{ form.password(class="form-control", id="password") }}
+
+                {{ form.submit(class="btn-login") }}
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    /* =====================================================
+   GLOBAL PROFESSIONAL COLORS & TOKENS
+===================================================== */
+    :root {
+        --bg-main: #eef1f7;
+        --card-bg: rgba(255, 255, 255, 0.78);
+        --border-soft: rgba(200, 200, 220, 0.38);
+
+        --primary: #1a237e;
+        --primary-light: #3949ab;
+
+        --text-main: #1f2d3d;
+        --text-muted: #5a6a75;
+
+        --radius: 16px;
+        --transition: 0.35s ease;
+
+        --neon-glow: 0 0 14px rgba(90, 120, 255, 0.6),
+            0 0 26px rgba(90, 120, 255, 0.4);
+    }
+
+    /* =====================================================
+   HERO BANNER WITH WAVES
+===================================================== */
+    .hero-banner {
+        background: linear-gradient(135deg, #11163b, #1e2a78);
+        padding: 3rem 2rem;
+        color: white;
+        border-radius: 20px;
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 25px rgba(50, 80, 255, 0.25);
+    }
+
+    .hero-banner h1 {
+        font-size: 2.8rem;
+        margin-bottom: .5rem;
+        text-shadow: var(--neon-glow);
+    }
+
+    .hero-banner h2 {
+        font-size: 1.3rem;
+        opacity: 0.85;
+    }
+
+    /* WAVE LAYERS */
+    .wave {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 200%;
+        height: 140px;
+        background-repeat: repeat-x;
+        animation: waveMove 14s linear infinite;
+        opacity: .5;
+        z-index: 0;
+    }
+
+    .layer1 {
+        background-image: url("https://i.imgur.com/Hh9sYgT.png");
+        animation-duration: 18s;
+        opacity: .35;
+    }
+
+    .layer2 {
+        background-image: url("https://i.imgur.com/Hh9sYgT.png");
+        animation-duration: 12s;
+        opacity: .55;
+        bottom: 8px;
+    }
+
+    .layer3 {
+        background-image: url("https://i.imgur.com/Hh9sYgT.png");
+        animation-duration: 9s;
+        opacity: .9;
+        bottom: 16px;
+    }
+
+    @keyframes waveMove {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    /* =====================================================
+   WRAPPER
+===================================================== */
+    .auth-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: stretch;
+        padding: 2rem;
+        gap: 2rem;
+        animation: fadeIn 0.7s ease forwards;
+        flex-wrap: wrap;
+    }
+
+    /* =====================================================
+   3D CARDS + SOFT BLUR + NEON THEME
+===================================================== */
+    .card-3d {
+        background: var(--card-bg);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 12px 38px rgba(0, 0, 50, 0.15);
+
+        transition: transform .5s ease, box-shadow .5s ease, border .5s ease;
+        transform-style: preserve-3d;
+        perspective: 1200px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glow layer */
+    .card-3d::before {
+        content: "";
+        position: absolute;
+        inset: -12px;
+        background: radial-gradient(circle at top left,
+                rgba(120, 150, 255, 0.25), transparent 70%);
+        filter: blur(30px);
+        z-index: -1;
+    }
+
+    /* CARD HOVER EFFECT (3D + ROTATION + GLOW) */
+    .card-3d:hover {
+        transform: rotateX(8deg) rotateY(-6deg) translateY(-10px);
+        border-color: rgba(120, 150, 255, 0.8);
+        box-shadow:
+            0 0 22px rgba(120, 150, 255, 0.45),
+            0 10px 45px rgba(0, 0, 80, 0.25);
+    }
+
+    /* =====================================================
+   INFO PANEL
+===================================================== */
+    .info-section {
+        flex: 1.4 1 450px;
+        padding: 3rem;
+    }
+
+    .info-header h1 {
+        font-size: 2.4rem;
+        color: var(--primary);
+    }
+
+    .info-header h2 {
+        margin-top: 0.6rem;
+        font-size: 1.4rem;
+        color: var(--text-main);
+        opacity: 0.85;
+    }
+
+    .purpose {
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+        color: var(--text-muted);
+        line-height: 1.7;
+    }
+
+    .features-container h3 {
+        margin-top: 2rem;
+        text-transform: uppercase;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+    }
+
+    /* Feature cards 3D hover */
+    .feature-list li {
+        background: rgba(255, 255, 255, 0.5);
+        padding: .8rem 1rem;
+        display: flex;
+        gap: 1rem;
+        border-radius: 14px;
+        margin-bottom: .7rem;
+        transition: transform .4s, box-shadow .4s;
+        transform-style: preserve-3d;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-list li:hover {
+        transform: translateY(-6px) rotateX(5deg);
+        box-shadow: 0 16px 30px rgba(0, 0, 80, 0.15);
+    }
+
+    /* =====================================================
+   LOGIN PANEL
+===================================================== */
+    .login-section {
+        flex: 1 1 350px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-card {
+        padding: 2.5rem;
+        width: 100%;
+    }
+
+    .brand-image {
+        width: 100%;
+        max-width: 260px;
+        margin: 0 auto 2rem auto;
+        display: block;
+        filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.12));
+    }
+
+    /* INPUTS */
+    .form-control {
+        width: 100%;
+        padding: .9rem 1.2rem;
+        border: 1.6px solid #ccd4e0;
+        border-radius: 12px;
+        margin-top: .4rem;
+        background: #f9fbff;
+        transition: .3s;
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: var(--neon-glow);
+        outline: none;
+    }
+
+    /* LOGIN BUTTON */
+    .btn-login {
+        width: 100%;
+        margin-top: 2rem;
+        padding: 1rem;
+        font-size: 1.25rem;
+        font-weight: 700;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        border: none;
+        color: white;
+        box-shadow: 0 8px 18px rgba(26, 35, 126, 0.45);
+        cursor: pointer;
+        transition: .3s;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 30px rgba(26, 35, 126, 0.6);
+    }
+
+    /* =====================================================
+   RESPONSIVE
+===================================================== */
+    @media (max-width: 900px) {
+        .auth-wrapper {
+            flex-direction: column;
+            padding: 1.5rem;
+        }
+    }
+
+    /* Fade-in Animation */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(15px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 {% endblock %}

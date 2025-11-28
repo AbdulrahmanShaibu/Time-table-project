@@ -2,9 +2,12 @@
 {% block title %}{{ action }} Teacher{% endblock %}
 {% block content %}
 <div class="card" style="max-width:820px;margin:18px auto">
+
   <h2>{{ action }} Teacher</h2>
+
   <form method="post">
     {{ form.hidden_tag() }}
+
     <div class="form-row">
       <div class="form-field">
         {{ form.first_name.label }} {{ form.first_name() }}
@@ -13,14 +16,24 @@
         {{ form.last_name.label }} {{ form.last_name() }}
       </div>
     </div>
+
     <div class="form-row">
       <div class="form-field">
         {{ form.email.label }} {{ form.email() }}
       </div>
       <div class="form-field">
-        {{ form.education_level_id.label }} {{ form.education_level_id() }}
+        {{ form.qualification.label }} {{ form.qualification() }}
       </div>
     </div>
+
+    <!-- Missing field: SCHOOL -->
+    <div class="form-row">
+      <div class="form-field">
+        {{ form.school_id.label }}
+        {{ form.school_id() }}
+      </div>
+    </div>
+
     <div class="form-row">
       <div class="form-field">
         {{ form.max_periods_per_day.label }} {{ form.max_periods_per_day() }}
@@ -29,9 +42,10 @@
         {{ form.max_periods_per_week.label }} {{ form.max_periods_per_week() }}
       </div>
     </div>
+
     <div class="form-actions">
-      <button class="btn" type="submit">{{ action }}</button>
-      <a class="btn ghost" href="{{ url_for('main.manage_teachers') }}">Cancel</a>
+      <button class="btn btn-success" type="submit">{{ action }}</button>
+      <a class="btn btn-danger" href="{{ url_for('main.manage_teachers') }}">Cancel</a>
     </div>
   </form>
 </div>
