@@ -1,511 +1,3 @@
-# # app/routes.py
-# from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
-# from flask_login import login_user, logout_user, login_required, current_user
-# from .forms import SubjectForm, TeacherForm, LoginForm, PeriodTemplateForm
-# from .imports import db
-# from .models import (
-#     User,  # Added import for User
-#     School, Teacher, ClassRoom, EducationLevel, PeriodTemplate,
-#     Subject, Room, Timetable  # Using TimetableSlot for timetable entries
-# )
-# from .utils import json_response
-
-# main_main_bp = Blueprint("main", __name__)
-
-# @main_main_bp.route("/")
-# @login_required
-# def index():
-#     return redirect(url_for('main.admin_admin_dashboard'))
-
-# # @main_main_bp.route("/admin_admin_dashboard")
-# # @login_required
-# # def admin_admin_dashboard():
-# #     return render_template("admin_admin_dashboard.html")
-
-# @main_main_bp.route('/admin')
-# @login_required
-# def admin_admin_dashboard():
-#     schools = School.query.all()
-#     teachers = Teacher.query.all()
-#     classes = ClassRoom.query.all()
-
-#     school = schools[0] if schools else None
-
-#     return render_template(
-#         "admin_admin_dashboard.html",
-#         school=school,
-#         teachers=teachers,
-#         classes=classes
-#     )
-
-
-
-# @main_main_bp.route("/login", methods=["GET", "POST"])
-# def login():
-#     form = LoginForm()
-#     if form.validate_on_submit():
-#         u = User.query.filter_by(username=form.username.data).first()
-#         if u and u.check_password(form.password.data):
-#             login_user(u)
-#             flash(f"Welcome back, {u.username}", "success")
-#             return redirect(url_for("main.admin_admin_dashboard"))
-#         flash("Invalid credentials", "danger")
-#     return render_template("login.html", form=form)
-
-
-# @main_main_bp.route("/logout")
-# @login_required
-# def logout():
-#     logout_user()
-#     flash("You have been logged out.", "info")
-#     return redirect(url_for("main.login"))
-
-
-# # Utility serializer helpers
-
-# def serialize_school(s):
-#     return {"id": s.id, "name": s.name}
-
-# def serialize_education_level(el):
-#     return {"id": el.id, "name": el.name}
-
-# def serialize_teacher(t):
-#     return {
-#         "id": t.id,
-#         "school_id": t.school_id,
-#         "first_name": t.first_name,
-#         "last_name": t.last_name,
-#         "email": t.email,
-#         "max_periods_per_day": t.max_periods_per_day,
-#         "max_periods_per_week": t.max_periods_per_week,
-#         "education_level_id": t.education_level_id
-#     }
-
-# def serialize_classroom(c):
-#     return {
-#         "id": c.id,
-#         "school_id": c.school_id,
-#         "name": c.name,
-#         "size": c.size,
-#         "education_level_id": c.education_level_id
-#     }
-
-# def serialize_period_template(pt):
-#     return {
-#         "id": pt.id,
-#         "school_id": pt.school_id,
-#         "name": pt.name,
-#         "days_per_week": pt.days_per_week,
-#         "periods_per_day": pt.periods_per_day,
-#         "break_after_period": pt.break_after_period
-#     }
-
-# def serialize_subject(s):
-#     return {
-#         "id": s.id,
-#         "school_id": s.school_id,
-#         "code": s.code,
-#         "name": s.name,
-#         "subject_type": s.subject_type,
-#         "periods_per_week": s.periods_per_week,
-#         "education_level_id": s.education_level_id
-#     }
-
-# def serialize_room(r):
-#     return {
-#         "id": r.id,
-#         "school_id": r.school_id,
-#         "name": r.name,
-#         "capacity": r.capacity,
-#         "room_type": r.room_type
-#     }
-
-# def serialize_timetable_slot(ts):
-#     return {
-#         "id": ts.id,
-#         "class_id": ts.class_id,
-#         "teacher_id": ts.teacher_id,
-#         "subject_id": ts.subject_id,
-#         "room_id": ts.room_id,
-#         "day_of_week": ts.day_of_week,
-#         "period_index": ts.period_index
-#     }
-
-# # -------------------------
-# # API ROUTES
-# # -------------------------
-
-# @main_main_bp.route("/api/schools", methods=["GET"])
-# @login_required
-# def api_get_schools():
-#     schools = School.query.all()
-#     return jsonify([serialize_school(s) for s in schools])
-
-# @main_main_bp.route("/api/education-levels", methods=["GET"])
-# @login_required
-# def api_get_education_levels():
-#     els = EducationLevel.query.all()
-#     return jsonify([serialize_education_level(el) for el in els])
-
-# # PERIOD TEMPLATES
-
-# @main_main_bp.route("/api/period-templates", methods=["GET", "POST"])
-# @login_required
-# def api_period_templates():
-#     if request.method == "GET":
-#         templates = PeriodTemplate.query.filter_by(school_id=1).order_by(PeriodTemplate.id.desc()).all()
-#         return jsonify([serialize_period_template(t) for t in templates])
-
-#     # POST - create new
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     name = data.get("name", "").strip()
-#     days_per_week = data.get("days_per_week")
-#     periods_per_day = data.get("periods_per_day")
-#     break_after_period = data.get("break_after_period")
-
-#     if not name or not isinstance(days_per_week, int) or not isinstance(periods_per_day, int):
-#         return jsonify({"error": "Invalid or missing fields"}), 400
-
-#     pt = PeriodTemplate(
-#         school_id=1,
-#         name=name,
-#         days_per_week=days_per_week,
-#         periods_per_day=periods_per_day,
-#         break_after_period=break_after_period
-#     )
-#     db.session.add(pt)
-#     db.session.commit()
-#     return jsonify(serialize_period_template(pt)), 201
-
-
-# @main_main_bp.route("/api/period-templates/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def api_period_template_detail(id):
-#     pt = PeriodTemplate.query.get_or_404(id)
-
-#     if request.method == "GET":
-#         return jsonify(serialize_period_template(pt))
-
-#     if request.method == "PUT":
-#         data = request.get_json()
-#         if not data:
-#             return jsonify({"error": "Missing JSON body"}), 400
-
-#         pt.name = data.get("name", pt.name).strip()
-#         pt.days_per_week = data.get("days_per_week", pt.days_per_week)
-#         pt.periods_per_day = data.get("periods_per_day", pt.periods_per_day)
-#         pt.break_after_period = data.get("break_after_period", pt.break_after_period)
-#         db.session.commit()
-#         return jsonify(serialize_period_template(pt))
-
-#     if request.method == "DELETE":
-#         db.session.delete(pt)
-#         db.session.commit()
-#         return jsonify({"message": "Period template deleted"}), 200
-
-# # TEACHERS
-
-# @main_main_bp.route("/manage_teachers", methods=["GET", "POST"])
-# @login_required
-# def manage_teachers():
-#     if request.method == "GET":
-#         teachers = Teacher.query.all()
-#         return jsonify([serialize_teacher(t) for t in teachers])
-
-#     # POST create new
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     first_name = data.get("first_name")
-#     last_name = data.get("last_name")
-#     email = data.get("email")
-#     max_periods_per_day = data.get("max_periods_per_day", 6)
-#     max_periods_per_week = data.get("max_periods_per_week", 30)
-#     education_level_id = data.get("education_level_id", None)
-#     if education_level_id == 0:
-#         education_level_id = None
-
-#     if not first_name or not last_name or not email:
-#         return jsonify({"error": "Missing required fields"}), 400
-
-#     new_teacher = Teacher(
-#         school_id=1,
-#         first_name=first_name,
-#         last_name=last_name,
-#         email=email,
-#         max_periods_per_day=max_periods_per_day,
-#         max_periods_per_week=max_periods_per_week,
-#         education_level_id=education_level_id
-#     )
-#     db.session.add(new_teacher)
-#     db.session.commit()
-#     return jsonify(serialize_teacher(new_teacher)), 201
-
-# @main_main_bp.route("/api/teachers/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def api_teacher_detail(id):
-#     teacher = Teacher.query.get_or_404(id)
-
-#     if request.method == "GET":
-#         return jsonify(serialize_teacher(teacher))
-
-#     if request.method == "PUT":
-#         data = request.get_json()
-#         if not data:
-#             return jsonify({"error": "Missing JSON body"}), 400
-
-#         teacher.first_name = data.get("first_name", teacher.first_name)
-#         teacher.last_name = data.get("last_name", teacher.last_name)
-#         teacher.email = data.get("email", teacher.email)
-#         teacher.max_periods_per_day = data.get("max_periods_per_day", teacher.max_periods_per_day)
-#         teacher.max_periods_per_week = data.get("max_periods_per_week", teacher.max_periods_per_week)
-#         education_level_id = data.get("education_level_id", teacher.education_level_id)
-#         teacher.education_level_id = None if education_level_id == 0 else education_level_id
-#         db.session.commit()
-#         return jsonify(serialize_teacher(teacher))
-
-#     if request.method == "DELETE":
-#         try:
-#             db.session.delete(teacher)
-#             db.session.commit()
-#             return jsonify({"message": "Teacher deleted"})
-#         except Exception:
-#             db.session.rollback()
-#             return jsonify({"error": "Error deleting teacher"}), 500
-
-# # SUBJECTS
-
-# @main_main_bp.route("/manage_subjects", methods=["GET", "POST"])
-# @login_required
-# def manage_subjects():
-#     if request.method == "GET":
-#         subjects = Subject.query.filter_by(school_id=1).all()
-#         return jsonify([serialize_subject(s) for s in subjects])
-
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     code = data.get("code")
-#     name = data.get("name")
-#     subject_type = data.get("subject_type")
-#     periods_per_week = data.get("periods_per_week")
-
-#     if not code or not name or not subject_type or periods_per_week is None:
-#         return jsonify({"error": "Missing required fields"}), 400
-
-#     new_subject = Subject(
-#         school_id=1,
-#         code=code,
-#         name=name,
-#         subject_type=subject_type,
-#         periods_per_week=periods_per_week
-#     )
-#     db.session.add(new_subject)
-#     db.session.commit()
-#     return jsonify(serialize_subject(new_subject)), 201
-
-# @main_main_bp.route("/api/subjects/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def api_subject_detail(id):
-#     subject = Subject.query.get_or_404(id)
-
-#     if request.method == "GET":
-#         return jsonify(serialize_subject(subject))
-
-#     if request.method == "PUT":
-#         data = request.get_json()
-#         if not data:
-#             return jsonify({"error": "Missing JSON body"}), 400
-
-#         subject.code = data.get("code", subject.code)
-#         subject.name = data.get("name", subject.name)
-#         subject.subject_type = data.get("subject_type", subject.subject_type)
-#         subject.periods_per_week = data.get("periods_per_week", subject.periods_per_week)
-#         db.session.commit()
-#         return jsonify(serialize_subject(subject))
-
-#     if request.method == "DELETE":
-#         db.session.delete(subject)
-#         db.session.commit()
-#         return jsonify({"message": "Subject deleted"}), 200
-
-# # ROOMS
-
-# @main_main_bp.route("/manage_rooms", methods=["GET", "POST"])
-# @login_required
-# def manage_rooms():
-#     if request.method == "GET":
-#         rooms = Room.query.all()
-#         return jsonify([serialize_room(r) for r in rooms])
-
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     name = data.get("name")
-#     capacity = data.get("capacity")
-#     room_type = data.get("room_type")
-
-#     if not name or capacity is None or not room_type:
-#         return jsonify({"error": "Missing required fields"}), 400
-
-#     new_room = Room(
-#         school_id=1,
-#         name=name,
-#         capacity=capacity,
-#         room_type=room_type
-#     )
-#     db.session.add(new_room)
-#     db.session.commit()
-#     return jsonify(serialize_room(new_room)), 201
-
-# @main_main_bp.route("/api/rooms/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def api_room_detail(id):
-#     room = Room.query.get_or_404(id)
-
-#     if request.method == "GET":
-#         return jsonify(serialize_room(room))
-
-#     if request.method == "PUT":
-#         data = request.get_json()
-#         if not data:
-#             return jsonify({"error": "Missing JSON body"}), 400
-
-#         room.name = data.get("name", room.name)
-#         room.capacity = data.get("capacity", room.capacity)
-#         room.room_type = data.get("room_type", room.room_type)
-#         db.session.commit()
-#         return jsonify(serialize_room(room))
-
-#     if request.method == "DELETE":
-#         db.session.delete(room)
-#         db.session.commit()
-#         return jsonify({"message": "Room deleted"}), 200
-
-# # CLASSES
-
-# @main_main_bp.route("/manage_classes", methods=["GET", "POST"])
-# @login_required
-# def manage_classes():
-#     if request.method == "GET":
-#         classes = ClassRoom.query.all()
-#         return jsonify([serialize_classroom(c) for c in classes])
-
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     name = data.get("name")
-#     size = data.get("size")
-#     education_level_id = data.get("education_level_id")
-
-#     if not name or size is None or education_level_id is None:
-#         return jsonify({"error": "Missing required fields"}), 400
-
-#     new_class = ClassRoom(
-#         school_id=1,
-#         name=name,
-#         size=size,
-#         education_level_id=education_level_id
-#     )
-#     db.session.add(new_class)
-#     db.session.commit()
-#     return jsonify(serialize_classroom(new_class)), 201
-
-# @main_main_bp.route("/api/classes/<int:id>", methods=["GET", "PUT", "DELETE"])
-# @login_required
-# def api_class_detail(id):
-#     classroom = ClassRoom.query.get_or_404(id)
-
-#     if request.method == "GET":
-#         return jsonify(serialize_classroom(classroom))
-
-#     if request.method == "PUT":
-#         data = request.get_json()
-#         if not data:
-#             return jsonify({"error": "Missing JSON body"}), 400
-
-#         classroom.name = data.get("name", classroom.name)
-#         classroom.size = data.get("size", classroom.size)
-#         classroom.education_level_id = data.get("education_level_id", classroom.education_level_id)
-#         db.session.commit()
-#         return jsonify(serialize_classroom(classroom))
-
-#     if request.method == "DELETE":
-#         db.session.delete(classroom)
-#         db.session.commit()
-#         return jsonify({"message": "Class deleted"}), 200
-
-# # TIMETABLE SLOTS
-
-# @main_main_bp.route("/api/timetable/class/<int:class_id>", methods=["GET"])
-# @login_required
-# def api_timetable_class(class_id):
-#     slots = Timetable.query.filter_by(class_id=class_id).all()
-#     return jsonify([serialize_timetable_slot(s) for s in slots])
-
-# @main_main_bp.route("/api/timetable/teacher/<int:teacher_id>", methods=["GET"])
-# @login_required
-# def api_timetable_teacher(teacher_id):
-#     slots = Timetable.query.filter_by(teacher_id=teacher_id).all()
-#     return jsonify([serialize_timetable_slot(s) for s in slots])
-
-# # VALIDATE ASSIGNMENT (example endpoint)
-
-# @main_main_bp.route("/api/validate-assignment", methods=["POST"])
-# @login_required
-# def api_validate_assignment():
-#     data = request.get_json()
-#     if not data:
-#         return jsonify({"error": "Missing JSON body"}), 400
-
-#     try:
-#         classroom = ClassRoom.query.get(data["class_id"])
-#         teacher = Teacher.query.get(data["teacher_id"])
-#         subject = Subject.query.get(data["subject_id"])
-#         room = Room.query.get(data["room_id"])
-#         day = data["day_of_week"]
-#         period = data["period_index"]
-#     except KeyError:
-#         return jsonify({"error": "Missing required keys"}), 400
-
-#     if not all([classroom, teacher, subject, room]):
-#         return jsonify({"error": "Invalid class/teacher/subject/room ID"}), 404
-
-#     # Make sure you have a validate_assignment function defined somewhere
-#     error = validate_assignment(classroom, teacher, subject, room, day, period)
-#     if error:
-#         return jsonify({"valid": False, "error": error}), 200
-#     return jsonify({"valid": True, "message": "Assignment valid"}), 200
-
-
-
-# @main_main_bp.route("/manage_classsubjects")
-# @login_required
-# def manage_classsubjects():
-#     return render_template("manage_classsubjects.html")
-
-# @main_main_bp.route("/manage_period_templates")
-# @login_required
-# def manage_period_templates():
-#     return render_template("manage_period_templates.html")
-
-# @main_main_bp.route("/admin_generate")
-# @login_required
-# def admin_generate():
-#     return render_template("admin_generate.html")
-
-
-
-
-
-
 
 # app/routes.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request
@@ -516,7 +8,7 @@ from .models import User, School, Teacher, EducationLevel, ClassRoom, Subject, S
 from .forms import (
     LoginForm, UserForm, SchoolForm, TeacherForm, EducationLevelForm, ClassForm,
     SubjectForm, SubjectLevelAssignmentForm, TeacherSubjectQualificationForm,
-    ClassSubjectAssignmentForm, RoomForm, PeriodTemplateForm
+    ClassSubjectAssignmentForm, RoomForm, PeriodTemplateForm,TimetableEntryForm
 )
 from .imports import db
 from flask import send_file
@@ -1053,11 +545,51 @@ def delete_period_template(template_id):
     flash("Period template deleted", "success")
     return redirect(url_for('main.manage_period_templates'))
 
+# @main_bp.route('/timetables')
+# @login_required
+# def list_timetables():
+#     timetables = Timetable.query.order_by(Timetable.day_of_week, Timetable.start_time).all()
+#     return render_template('timetables/list.html', timetables=timetables)
+
+from collections import defaultdict
+from datetime import time
+
 @main_bp.route('/timetables')
 @login_required
 def list_timetables():
-    timetables = Timetable.query.order_by(Timetable.day_of_week, Timetable.start_time).all()
-    return render_template('timetables/list.html', timetables=timetables)
+    from sqlalchemy.orm import joinedload
+
+    timetables = (
+        Timetable.query
+        .options(
+            joinedload(Timetable.class_subject_assignment).joinedload(ClassSubjectAssignment.classroom),
+            joinedload(Timetable.class_subject_assignment).joinedload(ClassSubjectAssignment.subject),
+            joinedload(Timetable.class_subject_assignment).joinedload(ClassSubjectAssignment.teacher),
+            joinedload(Timetable.room)
+        )
+        .order_by(Timetable.day_of_week, Timetable.start_time)
+        .all()
+    )
+
+    timetable_dict = defaultdict(list)
+    for t in timetables:
+        timetable_dict[(t.day_of_week, t.start_time)].append(t)
+
+    period_times = {
+        1: time(8, 0),
+        2: time(8, 40),
+        3: time(9, 20),
+        4: time(10, 0),
+        5: time(10, 40),
+        6: time(11, 20),
+        7: time(12, 0),
+        8: time(12, 40),
+        9: time(13, 20),
+        10: time(14, 0),
+    }
+
+    return render_template('timetables/list.html', timetable_dict=timetable_dict, period_times=period_times)
+
 
 @main_bp.route('/timetables/add', methods=['GET', 'POST'])
 @login_required

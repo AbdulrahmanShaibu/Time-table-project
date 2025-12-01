@@ -1,143 +1,392 @@
 {% extends "base.html" %}
 {% block title %}Timetables{% endblock %}
 {% block content %}
-<div class="card page-title">
-    <div style="
-    display:flex;align-items:flex-start;gap:18px;
-    background:#fff;border:1px solid #e6e8ec;border-left:5px solid #dc2626;
-    padding:22px 24px;border-radius:14px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;
-">
-        <div style="
-      background:#dc2626;width:48px;height:48px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 3px 8px rgba(220,38,38,0.3);
-  ">
-            <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-                <line x1="8" y1="4" x2="8" y2="2" />
-                <line x1="16" y1="4" x2="16" y2="2" />
-            </svg>
-        </div>
 
-        <div>
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">Timetable Management</h1>
-            <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;">
-                Automatically generate and manage school timetables. Assign teachers, rooms, subjects, and periods
-                efficiently with conflict detection.
-            </p>
-        </div>
+<style>
+    /* Page Title Card */
+    .page-title {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        background: #fff;
+        border: 1px solid #e6e8ec;
+        border-left: 5px solid #dc2626;
+        padding: 22px 24px;
+        border-radius: 14px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 22px;
+    }
+
+    .page-icon {
+        background: #dc2626;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 8px rgba(220, 38, 38, 0.3);
+        flex-shrink: 0;
+    }
+
+    .page-icon svg {
+        stroke: #fff;
+        fill: none;
+        stroke-width: 2;
+    }
+
+    .page-text h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .page-text p {
+        margin: 8px 0 0;
+        font-size: 15px;
+        color: #4b5563;
+        line-height: 1.6;
+    }
+
+    /* Controls */
+    .controls {
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 16px;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        color: white;
+        transition: background-color 0.3s ease;
+        user-select: none;
+        border: none;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0069d9;
+    }
+
+    /* Filters */
+    .filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .filters select,
+    .filters button {
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .filters select {
+        min-width: 140px;
+        cursor: pointer;
+    }
+
+    .filters button {
+        border: none;
+        color: white;
+        cursor: pointer;
+    }
+
+    .pdf-btn {
+        background: #28a745;
+    }
+
+    .pdf-btn:hover {
+        background: #218838;
+    }
+
+    .export-btn {
+        background: #007bff;
+    }
+
+    .export-btn:hover {
+        background: #0069d9;
+    }
+
+    /* Timetable Table */
+    #timetableTable {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        font-family: Arial, sans-serif;
+    }
+
+    #timetableTable th,
+    #timetableTable td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    #timetableTable th {
+        background-color: #003366;
+        color: white;
+        font-weight: 700;
+    }
+
+    .period-header {
+        background-color: #1E90FF !important;
+    }
+
+    tbody tr:nth-child(odd) {
+        background-color: #f9faff;
+    }
+
+    tbody tr:hover {
+        background-color: #e1f0ff;
+    }
+
+    .day-col {
+        background-color: #F0F8FF;
+        font-weight: bold;
+        text-align: left;
+        padding-left: 15px;
+        white-space: nowrap;
+    }
+
+    /* Subject Box */
+    .subject-box {
+        background-color: #e8f4ff;
+        padding: 6px 8px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-bottom: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        text-align: left;
+        cursor: default;
+        user-select: none;
+        line-height: 1.3;
+    }
+</style>
+
+<div class="page-title">
+    <div class="page-icon">
+        <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26'>
+            <rect x="3" y="4" width="18" height="18" rx="2" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+            <line x1="8" y1="4" x2="8" y2="2" />
+            <line x1="16" y1="4" x2="16" y2="2" />
+        </svg>
     </div>
-
-    <div class="controls">
-        <a class="btn btn-success" href="{{ url_for('main.add_timetable') }}">Add Entry</a>
+    <div class="page-text">
+        <h1>Timetable Management</h1>
+        <p>Automatically generate and manage school timetables with clear daily and period-based layout.</p>
     </div>
 </div>
 
-<div class="card table-wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-        <input class="search-input" placeholder="Search timetable..." />
-        <div>
-            <label class="small-muted">Per page</label>
-            <select class="select-page">
-                <option>5</option>
-                <option selected>10</option>
-                <option>25</option>
-            </select>
-        </div>
-    </div>
+<div class="controls">
+    <a class="btn btn-success" href="{{ url_for('main.add_timetable') }}">Add Entry</a>
+</div>
 
-    <table class="table data-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Class</th>
-                <th>Subject</th>
-                <th>Teacher</th>
-                <th>Room</th>
-                <th>Day</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for tt in timetables %}
-            <tr>
-                <td>{{ tt.id }}</td>
-                <td>{{ tt.class_subject_assignment.classroom.name }}</td>
-                <td>{{ tt.class_subject_assignment.subject.name }}</td>
-                <td>{{ tt.class_subject_assignment.teacher.full_name }}</td>
-                <td>{{ tt.room.name }}</td>
-                <td>{{ tt.day_of_week }}</td>
-                <td>{{ tt.start_time.strftime('%H:%M') }}</td>
-                <td>{{ tt.end_time.strftime('%H:%M') }}</td>
-                <td>
-                    <a class="btn btn-primary" href="{{ url_for('main.edit_timetable', timetable_id=tt.id) }}">Edit</a>
-                    <form id="delete-timetable-{{ tt.id }}"
-                        action="{{ url_for('main.delete_timetable', timetable_id=tt.id) }}" method="post"
-                        style="display:inline">
-                        <button type="button" class="btn btn-danger"
-                            onclick="confirmDelete('delete-timetable-{{ tt.id }}','Delete this timetable entry?')">Delete</button>
-                    </form>
-                </td>
-            </tr>
+<h2 style="text-align:center; margin-bottom:20px;">Auto‑Generated Full Weekly Timetable</h2>
+
+<div class="filters">
+    <select id="filterClass" aria-label="Filter by Class">
+        <option value="">Filter by Class</option>
+    </select>
+    <select id="filterTeacher" aria-label="Filter by Teacher">
+        <option value="">Filter by Teacher</option>
+    </select>
+    <select id="filterRoom" aria-label="Filter by Room">
+        <option value="">Filter by Room</option>
+    </select>
+    <select id="filterDay" aria-label="Filter by Day">
+        <option value="">Filter by Day</option>
+        <option value="Monday">Monday</option>
+        <option value="Tuesday">Tuesday</option>
+        <option value="Wednesday">Wednesday</option>
+        <option value="Thursday">Thursday</option>
+        <option value="Friday">Friday</option>
+    </select>
+
+    <button class="pdf-btn" onclick="printPDF()">Print PDF</button>
+    <button class="export-btn" onclick="exportTableToCSV('timetable.csv')">Export CSV</button>
+</div>
+
+<table id="timetableTable" aria-describedby="Auto-generated weekly timetable" role="grid">
+    <thead>
+        <tr>
+            <th rowspan="3" scope="col" style="width:120px;">DAY</th>
+            <th colspan="10" scope="colgroup">PERIODS</th>
+        </tr>
+        <tr>
+            {% for p in range(1, 11) %}
+            <th class="period-header" scope="col">{{ p }}</th>
             {% endfor %}
-        </tbody>
-    </table>
+        </tr>
+        <tr>
+            <th></th>
+            <th>08:00 - 08:40</th>
+            <th>08:40 - 09:20</th>
+            <th>09:20 - 10:00</th>
+            <th>10:00 - 10:40</th>
+            <th>10:40 - 11:20</th>
+            <th>11:20 - 12:00</th>
+            <th>12:00 - 12:40</th>
+            <th>12:40 - 01:20</th>
+            <th>01:20 - 02:00</th>
+            <th>02:00 - 02:40</th>
+        </tr>
+    </thead>
+    <tbody id="timetableBody">
+        {% for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] %}
+        <tr>
+            <th class="day-col" scope="row">{{ day }}</th>
 
-    <div class="pager"></div>
+            {% for p in range(1, 11) %}
+            <td data-day="{{ day }}" data-period="{{ p }}">
+                {% set entries = timetable_dict.get((day, period_times[p]), []) %}
+                {% for t in entries %}
+                <div class="subject-box" data-class="{{ t.class_subject_assignment.classroom.name }}"
+                    data-teacher="{{ t.class_subject_assignment.teacher.first_name }}" data-room="{{ t.room.name }}">
+                    <b>{{ t.class_subject_assignment.subject.name }}</b><br>
+                    Class: {{ t.class_subject_assignment.classroom.name }}<br>
+                    Teacher: {{ t.class_subject_assignment.teacher.first_name }}<br>
+                    Room: {{ t.room.name }}
+                </div>
+                {% endfor %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-    <style>
-        .search-input {
-            width: 100%;
-            max-width: 380px;
-            padding: 14px 18px;
-            font-size: 15px;
-            color: #1f2937;
-            /* Neutral dark text */
-            background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
+<script>
+    // Print PDF (native browser print)
+    function printPDF() {
+        window.print();
+    }
 
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
+    // Filtering function
+    function applyFilters() {
+        const classF = document.getElementById("filterClass").value.toLowerCase();
+        const teacherF = document.getElementById("filterTeacher").value.toLowerCase();
+        const roomF = document.getElementById("filterRoom").value.toLowerCase();
+        const dayF = document.getElementById("filterDay").value;
 
-            outline: none;
-            transition: all 0.25s ease;
+        // Show/hide rows by day filter
+        document.querySelectorAll("#timetableBody tr").forEach(row => {
+            const day = row.querySelector("th.day-col").innerText;
+            row.style.display = (!dayF || dayF === day) ? "table-row" : "none";
+        });
 
-            /* Subtle inner shadow for a polished effect */
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
+        // Show/hide subject boxes by class/teacher/room filters
+        document.querySelectorAll(".subject-box").forEach(box => {
+            const c = box.dataset.class.toLowerCase();
+            const t = box.dataset.teacher.toLowerCase();
+            const r = box.dataset.room.toLowerCase();
+
+            let visible = true;
+            if (classF && !c.includes(classF)) visible = false;
+            if (teacherF && !t.includes(teacherF)) visible = false;
+            if (roomF && !r.includes(roomF)) visible = false;
+
+            box.style.display = visible ? "block" : "none";
+        });
+    }
+
+    // Attach filter events
+    document.querySelectorAll("select").forEach(s => s.addEventListener("change", applyFilters));
+
+    // Populate filter selects dynamically
+    function populateFilters() {
+        const classes = new Set();
+        const teachers = new Set();
+        const rooms = new Set();
+
+        document.querySelectorAll(".subject-box").forEach(box => {
+            classes.add(box.dataset.class);
+            teachers.add(box.dataset.teacher);
+            rooms.add(box.dataset.room);
+        });
+
+        const classSelect = document.getElementById("filterClass");
+        classes.forEach(c => {
+            const opt = document.createElement("option");
+            opt.value = c;
+            opt.text = c;
+            classSelect.appendChild(opt);
+        });
+
+        const teacherSelect = document.getElementById("filterTeacher");
+        teachers.forEach(t => {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.text = t;
+            teacherSelect.appendChild(opt);
+        });
+
+        const roomSelect = document.getElementById("filterRoom");
+        rooms.forEach(r => {
+            const opt = document.createElement("option");
+            opt.value = r;
+            opt.text = r;
+            roomSelect.appendChild(opt);
+        });
+    }
+    populateFilters();
+
+    // CSV export function
+    function exportTableToCSV(filename) {
+        const csv = [];
+        const rows = document.querySelectorAll("#timetableTable tr");
+
+        for (const row of rows) {
+            const cols = row.querySelectorAll("th, td");
+            const rowData = [];
+            for (const col of cols) {
+                if (col.querySelectorAll(".subject-box").length) {
+                    let visibleSubjects = [];
+                    col.querySelectorAll(".subject-box").forEach(sb => {
+                        if (sb.style.display !== 'none') {
+                            visibleSubjects.push(sb.querySelector("b").innerText);
+                        }
+                    });
+                    rowData.push(visibleSubjects.join(" / ") || "");
+                } else {
+                    rowData.push(col.innerText.trim());
+                }
+            }
+            csv.push(rowData.join(","));
         }
 
-        .search-input:focus {
-            background: #ffffff;
+        const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+        const downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
 
-            border-color: #2563eb;
-            /* Deep professional blue */
-            box-shadow:
-                0 0 0 4px rgba(37, 99, 235, 0.18),
-                /* Outer glow */
-                inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            /* Retain inner shadow */
-        }
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>
 
-        .search-input:hover:not(:focus) {
-            background: #ffffff;
-            border-color: #93c5fd;
-            /* Soft hover highlight */
-        }
-
-        .search-input::placeholder {
-            color: #9ca3af;
-            font-style: italic;
-            opacity: 0.8;
-        }
-
-        /* Optional: smooth placeholder transition */
-        .search-input:focus::placeholder {
-            opacity: 0.4;
-            transition: opacity 0.2s ease;
-        }
-    </style>
-</div>
 {% endblock %}
