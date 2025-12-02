@@ -1,18 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Schools{% endblock %}
 {% block content %}
+
+<!-- ========================= PAGE HEADER ========================= -->
 <div class="card page-title">
-  <div style="
-    display:flex;align-items:flex-start;gap:18px;
-    background:#fff;border:1px solid #e6e8ec;border-left:5px solid #059669;
-    padding:22px 24px;border-radius:14px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;
-">
-    <div style="
-      background:#059669;width:48px;height:48px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 3px 8px rgba(5,150,105,0.3);
-  ">
+  <div class="header-box">
+    <div class="header-icon">
       <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
         <path d="M3 9l9-6 9 6v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
         <path d="M9 22V12h6v10" />
@@ -20,110 +13,201 @@
     </div>
 
     <div>
-      <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">Schools Management</h1>
-      <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;">
-        Maintain all registered schools in the system. Add or update school details to keep organizational data
-        accurate.
-      </p>
+      <h1>Schools Management</h1>
+      <p>Maintain all registered schools in the system with fast search, filtering & custom actions.</p>
     </div>
   </div>
 
-  <div class="controls">
-    <!-- <a class="btn" href="{{ url_for('main.add_school') }}">Add School</a> -->
+  <!-- Action Buttons -->
+  <div class="page-actions">
+    <button id="toggle-view" class="btn ghost small">Switch View</button>
+    <button id="toggle-dark" class="btn ghost small">Dark Mode</button>
   </div>
 </div>
 
-<div class="card table-wrap">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <input class="search-input" placeholder="Search schools..." />
-    <div>
-      <label class="small-muted">Per page</label>
-      <select class="select-page">
-        <option>5</option>
-        <option selected>10</option>
-        <option>25</option>
-      </select>
-    </div>
-  </div>
+<!-- ========================= FILTER BAR ========================= -->
+<div class="card filters-card">
+  <div class="filters-grid">
 
-  <table class="table data-table">
+    <input class="search-input" placeholder="Search schools..." />
+
+    <select class="filter-select" id="district-filter">
+      <option value="">All Districts</option>
+      <option value="Kusini-Unguja">Kusini-Unguja</option>
+      <option value="Kaskazini-Unguja">Kaskazini-Unguja</option>
+      <option value="Mjini-Magharibi">Mjini-Magharibi</option>
+    </select>
+
+    <select class="filter-select" id="type-filter">
+      <option value="">All Types</option>
+      <option value="Nursery">Nursery</option>
+      <option value="Primary">Primary</option>
+      <option value="Secondary">Secondary</option>
+    </select>
+
+    <select class="filter-select select-page">
+      <option>5</option>
+      <option selected>10</option>
+      <option>25</option>
+    </select>
+
+  </div>
+</div>
+
+<!-- ========================= TABLE WRAPPER ========================= -->
+<div class="card table-wrap">
+
+  <table class="table data-table enhanced-table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Created</th>
+        <th data-sort="id">ID ▲▼</th>
+        <th data-sort="name">Name ▲▼</th>
+        <th>Address</th>
+        <th>District</th>
+        <th>Location</th>
+        <th>Type</th>
+        <th data-sort="created">Created ▲▼</th>
         <!-- <th>Actions</th> -->
       </tr>
     </thead>
+
     <tbody>
       {% for s in schools %}
       <tr>
         <td>{{ s.id }}</td>
-        <td>{{ s.name }}</td>
-        <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '' }}</td>
         <td>
-          <a class="btn ghost" href="{{ url_for('main.edit_school', school_id=s.id) }}">Edit</a>
-          <form id="delete-school-{{ s.id }}" action="{{ url_for('main.delete_school', school_id=s.id) }}" method="post"
-            style="display:inline">
-            <!-- <button type="button" class="btn ghost" onclick="confirmDelete('delete-school-{{ s.id }}','Delete this school?')">Delete</button> -->
-          </form>
+          <span class="school-name">{{ s.name }}</span>
+          <span class="tag green">Active</span>
         </td>
+        <td>Tunguu</td>
+        <td>Kusini-Unguja</td>
+        <td>Zanzibar</td>
+        <td>
+          <span class="tag blue">Nursery</span>
+          <span class="tag yellow">Primary</span>
+          <span class="tag purple">Secondary</span>
+        </td>
+        <td>{{ s.created_at.strftime('%Y-%m-%d') if s.created_at else '' }}</td>
+
+        <!-- <td class="actions">
+          <a class="btn ghost small" href="{{ url_for('main.edit_school', school_id=s.id) }}">Edit</a>
+        </td> -->
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
   <div class="pager"></div>
-
-  <style>
-    .search-input {
-      width: 100%;
-      max-width: 380px;
-      padding: 14px 18px;
-      font-size: 15px;
-      color: #1f2937;
-      /* Neutral dark text */
-      background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
-
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-
-      outline: none;
-      transition: all 0.25s ease;
-
-      /* Subtle inner shadow for a polished effect */
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-
-    .search-input:focus {
-      background: #ffffff;
-
-      border-color: #2563eb;
-      /* Deep professional blue */
-      box-shadow:
-        0 0 0 4px rgba(37, 99, 235, 0.18),
-        /* Outer glow */
-        inset 0 1px 3px rgba(0, 0, 0, 0.05);
-      /* Retain inner shadow */
-    }
-
-    .search-input:hover:not(:focus) {
-      background: #ffffff;
-      border-color: #93c5fd;
-      /* Soft hover highlight */
-    }
-
-    .search-input::placeholder {
-      color: #9ca3af;
-      font-style: italic;
-      opacity: 0.8;
-    }
-
-    /* Optional: smooth placeholder transition */
-    .search-input:focus::placeholder {
-      opacity: 0.4;
-      transition: opacity 0.2s ease;
-    }
-  </style>
 </div>
+
+<!-- ========================= STYLES ========================= -->
+<style>
+  /* ---------- HEADER ---------- */
+  .header-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    border-left: 5px solid #059669;
+    background: #fff;
+    padding: 22px 24px;
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .header-icon {
+    background: #059669;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(5, 150, 105, 0.3);
+  }
+
+  .page-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+  }
+
+  /* ---------- FILTERS ---------- */
+  .filters-card {
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+  }
+
+  .filter-select {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+
+  /* ---------- TAGS ---------- */
+  .tag {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  .green {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .blue {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .yellow {
+    background: #fef9c3;
+    color: #92400e;
+  }
+
+  .purple {
+    background: #ede9fe;
+    color: #5b21b6;
+  }
+
+  /* ---------- TABLE ---------- */
+  .enhanced-table th {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* ---------- DARK MODE ---------- */
+  body.dark {
+    background: #111;
+    color: #eee;
+  }
+
+  body.dark .card {
+    background: #1a1a1a;
+  }
+
+  body.dark .table {
+    color: white;
+  }
+</style>
+
+
+<!-- ========================= JAVASCRIPT (Frontend Only) ========================= -->
+<script>
+  document.getElementById("toggle-dark").onclick = () => {
+    document.body.classList.toggle("dark");
+  };
+
+  document.getElementById("toggle-view").onclick = () => {
+    document.querySelector(".table-wrap").classList.toggle("grid-view");
+  };
+</script>
+
 {% endblock %}

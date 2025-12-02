@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Classes{% endblock %}
 {% block content %}
+
 <div class="card page-title">
     <div style="
-    display:flex;align-items:flex-start;gap:18px;
-    background:#fff;border:1px solid #e6e8ec;border-left:5px solid #2563eb;
-    padding:22px 24px;border-radius:14px;
-    box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;
-">
+        display:flex;align-items:flex-start;gap:18px;
+        background:#fff;border:1px solid #e6e8ec;border-left:5px solid #2563eb;
+        padding:22px 24px;border-radius:14px;
+        box-shadow:0 4px 10px rgba(0,0,0,0.05);margin-bottom:22px;
+    ">
         <div style="
-      background:#2563eb;width:48px;height:48px;border-radius:12px;
-      display:flex;align-items:center;justify-content:center;
-      box-shadow:0 3px 8px rgba(37,99,235,0.3);
-  ">
+            background:#2563eb;width:48px;height:48px;border-radius:12px;
+            display:flex;align-items:center;justify-content:center;
+            box-shadow:0 3px 8px rgba(37,99,235,0.3);
+        ">
             <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
                 <rect x="3" y="6" width="18" height="14" rx="2" />
                 <path d="M3 10h18" />
@@ -27,17 +28,22 @@
         </div>
     </div>
 
-    <div class="controls">
+    <div class="controls" style="display:flex;gap:10px;">
         <a class="btn btn-success" href="{{ url_for('main.add_class') }}">Add Class</a>
+        <button class="btn btn-secondary" onclick="exportTable('excel')">Export Excel</button>
+        <button class="btn btn-secondary" onclick="exportTable('pdf')">Export PDF</button>
+        <button class="btn btn-danger" id="bulkDelete" disabled>Delete Selected</button>
     </div>
 </div>
 
 <div class="card table-wrap">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-        <input class="search-input" placeholder="Search classes..." />
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <input id="searchBox" class="search-input" placeholder="Search classes..." onkeyup="filterTable()" />
+
         <div>
             <label class="small-muted">Per page</label>
-            <select class="select-page">
+            <select class="select-page" id="perPage" onchange="paginate()">
                 <option>5</option>
                 <option selected>10</option>
                 <option>25</option>
@@ -45,27 +51,48 @@
         </div>
     </div>
 
-    <table class="table data-table">
+    <table class="table data-table" id="classTable">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Class Name</th>
-                <th>Level Type</th>
-                <th>Assigned Teacher</th>
-                <th>Assigned Subject</th>
-                <th>Actions</th>
+                <th><input type="checkbox" id="selectAll" onclick="toggleAll()"></th>
+                <th onclick="sortTable(1)">ID ▲▼</th>
+                <th onclick="sortTable(2)">Class Name ▲▼</th>
+                <th onclick="sortTable(3)">Level Type ▲▼</th>
+                <th onclick="sortTable(4)">Assigned Teacher ▲▼</th>
+                <th>Update</th>
+                <th>Delete</th>
             </tr>
         </thead>
+
         <tbody>
             {% for c in classes %}
             <tr>
-                <td>{{ c.id }}</td>
-                <td>{{ c.name }}</td>
-                <td>{{ c.education_level.level_type if c.education_level else '' }}</td>
-                <td>{{ c.assigned_teacher.full_name if c.assigned_teacher else '—' }}</td>
-                <td>repeated logic</td>
                 <td>
-                    <a class="btn btn-primary" href="{{ url_for('main.edit_class', class_id=c.id) }}">Edit</a>
+                    <input type="checkbox" class="rowCheck" value="{{ c.id }}" onclick="enableBulkDelete()">
+                </td>
+
+                <td>{{ c.id }}</td>
+
+                <td>{{ c.name }}</td>
+
+                <td>
+                    <span class="badge-level">{{ c.education_level.level_type }}</span>
+                </td>
+
+                <td>
+                    {% if c.assigned_teacher %}
+                    <span class="badge-teacher">{{ c.assigned_teacher.full_name }}</span>
+                    {% else %}
+                    <span class="badge-empty">No Teacher</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    <a class="btn btn-primary" title="Edit this class"
+                        href="{{ url_for('main.edit_class', class_id=c.id) }}">Edit</a>
+                </td>
+
+                <td>
                     <form id="delete-class-{{ c.id }}" action="{{ url_for('main.delete_class', class_id=c.id) }}"
                         method="post" style="display:inline">
                         <button type="button" class="btn btn-danger"
@@ -77,57 +104,134 @@
         </tbody>
     </table>
 
-    <div class="pager"></div>
+    <div id="pager" class="pager"></div>
 
-    <style>
-        .search-input {
-            width: 100%;
-            max-width: 380px;
-            padding: 14px 18px;
-            font-size: 15px;
-            color: #1f2937;
-            /* Neutral dark text */
-            background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
-
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-
-            outline: none;
-            transition: all 0.25s ease;
-
-            /* Subtle inner shadow for a polished effect */
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-
-        .search-input:focus {
-            background: #ffffff;
-
-            border-color: #2563eb;
-            /* Deep professional blue */
-            box-shadow:
-                0 0 0 4px rgba(37, 99, 235, 0.18),
-                /* Outer glow */
-                inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            /* Retain inner shadow */
-        }
-
-        .search-input:hover:not(:focus) {
-            background: #ffffff;
-            border-color: #93c5fd;
-            /* Soft hover highlight */
-        }
-
-        .search-input::placeholder {
-            color: #9ca3af;
-            font-style: italic;
-            opacity: 0.8;
-        }
-
-        /* Optional: smooth placeholder transition */
-        .search-input:focus::placeholder {
-            opacity: 0.4;
-            transition: opacity 0.2s ease;
-        }
-    </style>
 </div>
+
+
+<style>
+    /* --- Professional Styling Enhancements --- */
+
+    .badge-level {
+        background: #e0f2fe;
+        color: #0369a1;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .badge-teacher {
+        background: #dcfce7;
+        color: #166534;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .badge-empty {
+        background: #fee2e2;
+        color: #b91c1c;
+        padding: 4px 10px;
+        border-radius: 10px;
+        font-size: 13px;
+    }
+
+    .table tbody tr:hover {
+        background: #f9fafb;
+        transition: 0.2s ease;
+    }
+
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 8px;
+    }
+</style>
+
+<script>
+    /* ------------------ LIVE SEARCH ------------------ */
+    function filterTable() {
+        let val = document.getElementById("searchBox").value.toLowerCase();
+        let rows = document.querySelectorAll("#classTable tbody tr");
+
+        rows.forEach(r => {
+            r.style.display = r.innerText.toLowerCase().includes(val) ? "" : "none";
+        });
+    }
+
+    /* ------------------ SORT TABLE ------------------ */
+    function sortTable(col) {
+        let table = document.getElementById("classTable");
+        let switching = true;
+        let dir = "asc";
+
+        while (switching) {
+            switching = false;
+            let rows = table.rows;
+
+            for (let i = 1; i < rows.length - 1; i++) {
+                let x = rows[i].getElementsByTagName("td")[col].innerText.toLowerCase();
+                let y = rows[i + 1].getElementsByTagName("td")[col].innerText.toLowerCase();
+
+                if ((dir === "asc" && x > y) || (dir === "desc" && x < y)) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    break;
+                }
+            }
+
+            if (!switching && dir === "asc") {
+                dir = "desc";
+                switching = true;
+            }
+        }
+    }
+
+    /* ------------------ SELECT ALL ------------------ */
+    function toggleAll() {
+        let checked = document.getElementById("selectAll").checked;
+        document.querySelectorAll(".rowCheck").forEach(cb => cb.checked = checked);
+        enableBulkDelete();
+    }
+
+    function enableBulkDelete() {
+        let anyChecked = Array.from(document.querySelectorAll(".rowCheck")).some(cb => cb.checked);
+        document.getElementById("bulkDelete").disabled = !anyChecked;
+    }
+
+    /* ------------------ EXPORT ------------------ */
+    function exportTable(type) {
+        alert("Export " + type + " coming soon...");
+    }
+
+    /* ------------------ PAGINATION (front-end only) ------------------ */
+    function paginate() {
+        let perPage = parseInt(document.getElementById("perPage").value);
+        let rows = document.querySelectorAll("#classTable tbody tr");
+        let pager = document.getElementById("pager");
+
+        rows.forEach(r => r.style.display = "");
+
+        pager.innerHTML = "";
+        if (rows.length <= perPage) return;
+
+        let pages = Math.ceil(rows.length / perPage);
+
+        for (let i = 1; i <= pages; i++) {
+            let btn = document.createElement("button");
+            btn.innerText = i;
+
+            btn.onclick = function () {
+                rows.forEach((r, idx) => {
+                    r.style.display = (idx >= (i - 1) * perPage && idx < i * perPage) ? "" : "none";
+                });
+            };
+
+            pager.appendChild(btn);
+        }
+    }
+    paginate();
+</script>
+
 {% endblock %}

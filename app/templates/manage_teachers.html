@@ -1,31 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Teachers{% endblock %}
 {% block content %}
+
 <div class="card page-title">
   <div style="
-  display: flex;
-  align-items: flex-start;
-  gap: 18px;
-  background: #ffffff;
-  border: 1px solid #e6e8ec;
-  border-left: 5px solid #2563eb; 
-  padding: 22px 24px;
-  border-radius: 14px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  margin-bottom: 22px;
-">
-
-    <!-- Info Icon -->
-    <div style="
-    background: #2563eb;
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 8px rgba(37,99,235,0.3);
-">
+    align-items: flex-start;
+    gap: 18px;
+    background: #ffffff;
+    border: 1px solid #e6e8ec;
+    border-left: 5px solid #2563eb; 
+    padding: 22px 24px;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    margin-bottom: 22px;
+  ">
+
+    <div style="
+      background: #2563eb;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 8px rgba(37,99,235,0.3);
+    ">
       <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#ffffff' fill='none' stroke-width='2'
         stroke-linecap='round' stroke-linejoin='round'>
         <circle cx='12' cy='12' r='10'></circle>
@@ -34,39 +34,23 @@
       </svg>
     </div>
 
-    <!-- Text Content -->
     <div>
-      <h1 style="
-        margin: 0;
-        font-size: 24px;
-        font-weight: 700;
-        color: #111827;
-    ">
+      <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">
         Teachers Management
       </h1>
 
-      <p style="
-        margin: 8px 0 0;
-        font-size: 15px;
-        color: #4b5563;
-        line-height: 1.6;
-        max-width: 700px;
-    ">
+      <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;max-width:700px;">
         This section allows you to view, manage, and update all teachers registered in the system.
-        Use the <strong>"Add Teacher"</strong> button to register a new teacher and keep records up to date.
       </p>
     </div>
   </div>
 
-  <div class="controls">
+  <div class="controls" style="margin-bottom:20px">
     <a class="btn btn-success" href="{{ url_for('main.add_teacher') }}">Add Teacher</a>
-    <a class="btn btn-primary" href="{{ url_for('main.download_all_teachers_pdf') }}">
-      Download All Teachers PDF
-    </a>
-
+    <a class="btn btn-primary" href="{{ url_for('main.download_all_teachers_pdf') }}">Download All Teachers PDF</a>
   </div>
-
 </div>
+
 
 <div class="card table-wrap">
   <div style="display:flex;justify-content:space-between;align-items:center">
@@ -84,13 +68,15 @@
   <table class="table data-table">
     <thead>
       <tr>
-        <th>ID</th>
+        <th>S/N</th>
         <th>Name</th>
         <th>Email</th>
         <th>Qualification</th>
         <th>Max/day</th>
         <th>Max/Week</th>
-        <th>Actions</th>
+        <th>View</th>
+        <th>Update</th>
+        <th>Delete</th>
       </tr>
     </thead>
     <tbody>
@@ -101,13 +87,35 @@
         <td>{{ t.email or '' }}</td>
         <td>{{ t.qualification }}</td>
         <td>{{ t.max_periods_per_day }}</td>
-        <td>{{ t.max_periods_per_week}}</td>
+        <td>{{ t.max_periods_per_week }}</td>
+
+        <!-- VIEW BUTTON -->
+        <td>
+          <button class="btn btn-success" onclick="openTeacherModal(
+              '{{ t.id }}',
+              '{{ t.full_name }}',
+              '{{ t.email}}',
+              '{{ t.qualification }}',
+              '{{ t.max_periods_per_day }}',
+              '{{ t.max_periods_per_week }}'
+            )">
+            View
+          </button>
+        </td>
+
+        <!-- UPDATE -->
         <td>
           <a class="btn btn-primary" href="{{ url_for('main.edit_teacher', teacher_id=t.id) }}">Edit</a>
+        </td>
+
+        <!-- DELETE -->
+        <td>
           <form id="delete-teacher-{{ t.id }}" action="{{ url_for('main.delete_teacher', teacher_id=t.id) }}"
             method="post" style="display:inline">
             <button type="button" class="btn btn-danger"
-              onclick="confirmDelete('delete-teacher-{{ t.id }}','Delete this teacher?')">Delete</button>
+              onclick="confirmDelete('delete-teacher-{{ t.id }}','Delete this teacher?')">
+              Delete
+            </button>
           </form>
         </td>
       </tr>
@@ -116,58 +124,189 @@
   </table>
 
   <div class="pager"></div>
-
-  <style>
-    .search-input {
-      width: 100%;
-      max-width: 380px;
-      padding: 14px 18px;
-      font-size: 15px;
-      color: #1f2937;
-      /* Neutral dark text */
-      background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
-
-      border: 1px solid #d1d5db;
-      border-radius: 12px;
-
-      outline: none;
-      transition: all 0.25s ease;
-
-      /* Subtle inner shadow for a polished effect */
-      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-
-    .search-input:focus {
-      background: #ffffff;
-
-      border-color: #2563eb;
-      /* Deep professional blue */
-      box-shadow:
-        0 0 0 4px rgba(37, 99, 235, 0.18),
-        /* Outer glow */
-        inset 0 1px 3px rgba(0, 0, 0, 0.05);
-      /* Retain inner shadow */
-    }
-
-    .search-input:hover:not(:focus) {
-      background: #ffffff;
-      border-color: #93c5fd;
-      /* Soft hover highlight */
-    }
-
-    .search-input::placeholder {
-      color: #9ca3af;
-      font-style: italic;
-      opacity: 0.8;
-    }
-
-    /* Optional: smooth placeholder transition */
-    .search-input:focus::placeholder {
-      opacity: 0.4;
-      transition: opacity 0.2s ease;
-    }
-  </style>
-
-
 </div>
+
+
+
+<!-- ==========================
+     UPGRADED MODAL (Popup)
+     ========================== -->
+<div id="teacherModal" class="modal-overlay" style="display:none">
+  <div class="modal-box animated-modal">
+
+    <div class="modal-header">
+      <img src="https://ui-avatars.com/api/?name=Teacher&background=2563eb&color=fff&size=120" class="avatar">
+      <h2 id="modalName"></h2>
+    </div>
+
+    <div id="modalContent" class="modal-details"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeTeacherModal()">Close</button>
+      <button class="btn btn-primary" onclick="printTeacherDetails()">Print</button>
+    </div>
+
+  </div>
+</div>
+
+
+
+<!-- ==========================
+     UPGRADED STYLES
+     ========================== -->
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+  }
+
+  .animated-modal {
+    animation: scaleIn 0.25s ease-out;
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.85);
+      opacity: 0;
+    }
+
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .modal-box {
+    background: #fff;
+    width: 450px;
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+  }
+
+  .modal-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 4px solid #2563eb;
+    margin-bottom: 10px;
+  }
+
+  .modal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #1f2937;
+  }
+
+  .modal-details {
+    padding: 5px 10px;
+  }
+
+  .modal-row {
+    padding: 10px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 16px;
+  }
+
+  .modal-row label {
+    font-weight: bold;
+    color: #374151;
+    display: block;
+  }
+
+  .modal-actions {
+    margin-top: 20px;
+    text-align: right;
+  }
+
+  .modal-actions button {
+    margin-left: 10px;
+  }
+</style>
+
+
+
+<!-- ==========================
+     JAVASCRIPT: Popup + Print
+     ========================== -->
+<script>
+  function openTeacherModal(id, name, email, qualification, maxDay, maxWeek) {
+
+    document.getElementById("modalName").innerHTML = name;
+
+    const html = `
+    <div class="modal-row"><label>ID</label>${id}</div>
+    <div class="modal-row"><label>Email</label>${email}</div>
+    <div class="modal-row"><label>Qualification</label>${qualification}</div>
+    <div class="modal-row"><label>Max Periods / Day</label>${maxDay}</div>
+    <div class="modal-row"><label>Max Periods / Week</label>${maxWeek}</div>
+  `;
+
+    document.getElementById("modalContent").innerHTML = html;
+    document.getElementById("teacherModal").style.display = "flex";
+
+    // Close when clicking outside
+    document.getElementById("teacherModal").onclick = (e) => {
+      if (e.target.id === "teacherModal") closeTeacherModal();
+    };
+
+    // Close with ESC
+    document.onkeydown = (e) => {
+      if (e.key === "Escape") closeTeacherModal();
+    };
+  }
+
+  function closeTeacherModal() {
+    document.getElementById("teacherModal").style.display = "none";
+  }
+
+  function printTeacherDetails() {
+    const name = document.getElementById("modalName").innerHTML;
+    const content = document.getElementById("modalContent").innerHTML;
+
+    const w = window.open("", "", "width=700,height=600");
+
+    w.document.write(`
+    <html>
+      <head>
+        <title>${name} - Details</title>
+        <style>
+          body { font-family: Arial; padding:20px; }
+          h2 { text-align:center; font-size:22px; margin-bottom:20px; }
+          .modal-row { 
+            margin-bottom:12px;
+            font-size:17px;
+            border-bottom:1px solid #ccc;
+            padding-bottom:8px;
+          }
+          label { font-weight:bold; display:block; }
+        </style>
+      </head>
+      <body>
+        <h2>${name}</h2>
+        ${content}
+      </body>
+    </html>
+  `);
+
+    w.document.close();
+    w.print();
+  }
+</script>
+
 {% endblock %}

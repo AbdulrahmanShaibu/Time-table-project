@@ -2,18 +2,10 @@
 {% block title %}Subjects{% endblock %}
 {% block content %}
 
-<div class="card page-title">
-    <div style="
-        display:flex; align-items:flex-start; gap:18px;
-        background:#fff; border:1px solid #e5e7eb; border-left:5px solid #7c3aed;
-        padding:22px 24px; border-radius:14px;
-        box-shadow:0 4px 10px rgba(0,0,0,0.05); margin-bottom:22px;
-    ">
-        <div style="
-            background:#7c3aed; width:48px; height:48px; border-radius:12px;
-            display:flex; align-items:center; justify-content:center;
-            box-shadow:0 3px 8px rgba(124,58,237,0.35);
-        ">
+<!-- ===================== PAGE HEADER ===================== -->
+<div class="card page-title animate-fade">
+    <div class="title-box">
+        <div class="icon-box">
             <svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' stroke='#fff' fill='none' stroke-width='2'>
                 <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22h11A2.5 2.5 0 0 0 20 19.5V6H4v13.5Z" />
                 <path d="M4 6V4h16v2" />
@@ -21,10 +13,8 @@
         </div>
 
         <div>
-            <h1 style="margin:0;font-size:24px;font-weight:700;color:#111827;">
-                Subjects Management
-            </h1>
-            <p style="margin:8px 0 0;font-size:15px;color:#4b5563;line-height:1.6;">
+            <h1 class="title">Subjects Management</h1>
+            <p class="subtitle">
                 Manage academic subjects offered in the school. Add, update, and organize subjects
                 for class timetable planning.
             </p>
@@ -32,18 +22,22 @@
     </div>
 
     <div class="controls">
-        <a class="btn btn-success" href="{{ url_for('main.add_subject') }}">Add Subject</a>
+        <a class="btn btn-success fancy-btn" href="{{ url_for('main.add_subject') }}">+ Add Subject</a>
     </div>
 </div>
 
-<div class="card table-wrap">
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <input class="search-input" placeholder="Search subjects..." />
+
+<!-- ===================== TABLE CARD ===================== -->
+<div class="card table-wrap animate-slide">
+
+    <!-- Top controls -->
+    <div class="table-controls">
+        <input class="search-input" placeholder="Search subjects..." onkeyup="filterTable()" />
 
         <div>
             <label class="small-muted">Per page</label>
-            <select class="select-page">
+            <select class="select-page" onchange="paginateTable()">
                 <option>5</option>
                 <option selected>10</option>
                 <option>25</option>
@@ -51,9 +45,10 @@
         </div>
     </div>
 
-    <table class="table data-table">
-        <thead style="background-color: #2563eb;">
-            <tr style="background:#2563eb;">
+    <!-- Table -->
+    <table class="table data-table" id="subjectTable">
+        <thead>
+            <tr>
                 <th>ID</th>
                 <th>Subject Code</th>
                 <th>Subject Name</th>
@@ -72,7 +67,7 @@
                 <td style="text-transform:capitalize">{{ s.subject_type }}</td>
 
                 <td>
-                    <a class="btn btn-primary" href="{{ url_for('main.edit_subject', subject_id=s.id) }}">
+                    <a class="btn btn-primary table-btn" href="{{ url_for('main.edit_subject', subject_id=s.id) }}">
                         Edit
                     </a>
                 </td>
@@ -81,8 +76,8 @@
                     <form id="delete-subject-{{ s.id }}" action="{{ url_for('main.delete_subject', subject_id=s.id) }}"
                         method="post" style="display:inline">
 
-                        <button type="button" class="btn btn-danger"
-                            onclick="confirmDelete('delete-subject-{{ s.id }}','Delete this subject?')">
+                        <button type="button" class="btn btn-danger table-btn"
+                            onclick="openDeleteModal('delete-subject-{{ s.id }}')">
                             Delete
                         </button>
 
@@ -95,48 +90,266 @@
 
     <div class="pager"></div>
 
-    <style>
-        .search-input {
-            width: 100%;
-            max-width: 380px;
-            padding: 14px 18px;
-            font-size: 15px;
-            color: #1f2937;
-            background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
-
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
-
-            outline: none;
-            transition: all 0.25s ease;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-
-        .search-input:focus {
-            background: #fff;
-            border-color: #2563eb;
-            box-shadow:
-                0 0 0 4px rgba(37, 99, 235, 0.18),
-                inset 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-
-        .search-input:hover:not(:focus) {
-            background: #fff;
-            border-color: #93c5fd;
-        }
-
-        .search-input::placeholder {
-            color: #9ca3af;
-            font-style: italic;
-            opacity: 0.8;
-        }
-
-        .search-input:focus::placeholder {
-            opacity: 0.4;
-            transition: opacity .2s ease;
-        }
-    </style>
-
 </div>
+
+
+
+<!-- ===================== DELETE CONFIRM MODAL ===================== -->
+<div id="confirmModal" class="modal-bg" style="display:none">
+    <div class="modal-card animate-pop">
+        <h3>Confirm Delete</h3>
+        <p>Are you sure you want to delete this subject?</p>
+
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+            <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- ===================== STYLES ===================== -->
+<style>
+    /* Animations */
+    .animate-fade {
+        animation: fadeIn .6s ease;
+    }
+
+    .animate-slide {
+        animation: slideUp .7s ease;
+    }
+
+    .animate-pop {
+        animation: pop .35s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pop {
+        0% {
+            transform: scale(.6);
+            opacity: 0;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+
+    /* Title section */
+    .title-box {
+        display: flex;
+        gap: 18px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-left: 5px solid #7c3aed;
+        padding: 22px;
+        border-radius: 14px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .icon-box {
+        background: #7c3aed;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 8px rgba(124, 58, 237, 0.35);
+    }
+
+    .title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .subtitle {
+        font-size: 15px;
+        color: #4b5563;
+        margin-top: 8px;
+    }
+
+
+    /* Table controls */
+    .table-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+    }
+
+    /* Improved input */
+    .search-input {
+        width: 380px;
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        background: #f9fafb;
+        transition: .25s ease;
+        font-size: 15px;
+    }
+
+    .search-input:focus {
+        background: #fff;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+        outline: none;
+    }
+
+    /* Table enhancements */
+    #subjectTable tbody tr {
+        transition: background .25s ease, transform .15s ease;
+    }
+
+    #subjectTable tbody tr:hover {
+        background: #f3f4f6;
+        transform: scale(1.01);
+    }
+
+    .table-btn {
+        transition: transform .2s ease;
+    }
+
+    .table-btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Modal */
+    .modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .modal-card {
+        width: 360px;
+        background: #fff;
+        padding: 22px;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        text-align: center;
+    }
+
+    .modal-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 18px;
+    }
+
+    /* Buttons style upgrade */
+    .fancy-btn {
+        border-radius: 10px;
+        padding: 10px 18px;
+        transition: 0.25s ease;
+        font-weight: 600;
+    }
+
+    .fancy-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+    let deleteFormId = null;
+
+    /* --- Open modal --- */
+    function openDeleteModal(formId) {
+        deleteFormId = formId;
+        document.getElementById("confirmModal").style.display = "flex";
+    }
+
+    /* --- Close modal --- */
+    function closeDeleteModal() {
+        document.getElementById("confirmModal").style.display = "none";
+    }
+
+    /* --- Confirm delete --- */
+    document.getElementById("confirmDeleteBtn").onclick = function () {
+        if (deleteFormId) document.getElementById(deleteFormId).submit();
+    };
+
+
+    /* --- Search filter (instant) --- */
+    function filterTable() {
+        const input = document.querySelector('.search-input').value.toLowerCase();
+        const rows = document.querySelectorAll("#subjectTable tbody tr");
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(input) ? "" : "none";
+        });
+    }
+
+
+    /* --- Pagination (frontend only) --- */
+    function paginateTable() {
+        const rows = [...document.querySelectorAll("#subjectTable tbody tr")];
+        const perPage = parseInt(document.querySelector(".select-page").value);
+
+        let page = 1;
+        let html = "";
+        const pager = document.querySelector(".pager");
+
+        const totalPages = Math.ceil(rows.length / perPage);
+
+        pager.innerHTML = "";
+        for (let i = 1; i <= totalPages; i++) {
+            const btn = document.createElement("button");
+            btn.innerText = i;
+            btn.className = "btn btn-light"
+            btn.onclick = () => showPage(i);
+            pager.appendChild(btn);
+        }
+
+        showPage(1);
+
+        function showPage(page) {
+            rows.forEach((row, index) => {
+                row.style.display = (index >= (page - 1) * perPage && index < page * perPage)
+                    ? "" : "none";
+            });
+        }
+    }
+
+    paginateTable();
+</script>
 
 {% endblock %}

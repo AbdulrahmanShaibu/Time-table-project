@@ -2,10 +2,15 @@
 {% block title %}Class Subject Assignment{% endblock %}
 {% block content %}
 
-<div class="card p-3 mb-3 page-title d-flex align-items-center">
-    <div style="flex:1">
-        <h2 class="mb-0">Class–Subject–Teacher Assignments</h2>
-        <p class="text-muted small">Manage which teacher is assigned to teach each subject in each class.</p>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+
+<div class="card p-3 mb-4 page-title d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div style="flex: 1; min-width: 280px;">
+        <h2 class="mb-1">Class–Subject–Teacher Assignments</h2>
+        <p class="text-muted small mb-0">Manage which teacher is assigned to teach each subject in each class.</p>
     </div>
     <div>
         <a class="btn btn-success" href="{{ url_for('main.add_teacher_class_subject') }}">
@@ -14,44 +19,90 @@
     </div>
 </div>
 
-<div class="card p-3 mb-3">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <input id="searchInput" class="form-control" style="max-width:360px" placeholder="Search assignment...">
-        <div>
-            <label class="small text-muted me-2">Per page</label>
-            <select id="perPage" class="form-select d-inline-block" style="width:80px">
-                <option>5</option>
-                <option selected>10</option>
-                <option>25</option>
-            </select>
+<div class="card p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+        <div style="flex: 1; min-width: 240px; max-width: 540px;">
+            <input id="searchInput" class="form-control search-input" placeholder="Search assignment...">
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <label for="perPage" class="small text-muted mb-0">Per page:</label>
+                <select id="perPage" class="form-select form-select-sm" style="width: 90px;">
+                    <option value="5">5</option>
+                    <option value="10" selected>10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+            <button id="bulkDeleteBtn" class="btn btn-outline-danger btn-sm" disabled>
+                Bulk Delete
+            </button>
         </div>
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table id="assignmentsDT" class="table table-hover table-striped align-middle" style="width:100%">
             <thead>
                 <tr>
+                    <th><input id="selectAll" type="checkbox" title="Select all visible"></th>
                     <th>S/N</th>
                     <th>Class Name</th>
                     <th>Subject Name</th>
+                    <th>Subject Code</th>
+                    <th>Subject Type</th>
                     <th>Teacher Name</th>
+                    <th>Teacher Qualification</th>
+                    <th>Max Period/Day</th>
+                    <th>Max Period/Week</th>
                     <th>Actions</th>
                 </tr>
+                <tr id="filterRow" style="display:none;">
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                </tr>
             </thead>
-            <tbody id="assignmentsTable">
+            <tbody>
                 {% for csb in class_subject_assignments %}
-                <tr
-                    data-search="{{ csb.classroom.name }} {{ csb.subject.name }} {{ csb.teacher.first_name }} {{ csb.teacher.last_name }}">
+                <tr data-row-id="{{ csb.id }}" data-search="
+                    {{ csb.classroom.name }}
+                    {{ csb.subject.name }}
+                    {{ csb.subject.code }}
+                    {{ csb.subject.subject_type }}
+                    {{ csb.teacher.first_name }}
+                    {{ csb.teacher.last_name }}
+                    {{ csb.teacher.qualification }}
+                    {{ csb.teacher.max_periods_per_day }}
+                    {{ csb.teacher.max_periods_per_week }}
+                ">
+                    <td><input class="row-select" type="checkbox" data-form-id="delete-csb-{{ csb.id }}"></td>
                     <td>{{ loop.index }}</td>
                     <td>{{ csb.classroom.name }}</td>
-                    <td>{{ csb.subject.name }} <small class="text-muted">({{ csb.subject.code }})</small></td>
+                    <td>{{ csb.subject.name }}</td>
+                    <td>{{ csb.subject.code }}</td>
+                    <td>{{ csb.subject.subject_type }}</td>
                     <td>{{ csb.teacher.first_name }} {{ csb.teacher.last_name }}</td>
-                    <td>
-                        <a class="btn btn-sm btn-primary"
+                    <td>{{ csb.teacher.qualification }}</td>
+                    <td>{{ csb.teacher.max_periods_per_day }}</td>
+                    <td>{{ csb.teacher.max_periods_per_week }}</td>
+                    <td class="text-nowrap">
+                        <button type="button" class="btn btn-sm btn-info me-1 view-details-btn"
+                            data-row-id="{{ csb.id }}">
+                            View Details
+                        </button>
+                        <a class="btn btn-sm btn-primary me-1"
                             href="{{ url_for('main.edit_class_subject_assignment', assignment_id=csb.id) }}">
                             Edit
                         </a>
-
                         <form id="delete-csb-{{ csb.id }}"
                             action="{{ url_for('main.delete_class_subject_assignment', assignment_id=csb.id) }}"
                             method="post" style="display:inline;">
@@ -68,19 +119,18 @@
     </div>
 </div>
 
-<div class="pager"></div>
-{% endblock %}
+<!-- Modals and other code remain unchanged -->
 
-<!-- Search Styling -->
 <style>
+    /* Keep your search input style but add some spacing tweaks */
     .search-input {
         width: 100%;
-        max-width: 380px;
-        padding: 14px 18px;
+        max-width: 540px;
+        padding: 10px 14px;
         font-size: 15px;
         color: #1f2937;
         background: linear-gradient(to bottom right, #fafafa, #f3f4f6);
-        border: 1px solid #d1d5db;
+        border: 1.5px solid #d1d5db;
         border-radius: 12px;
         outline: none;
         transition: all 0.25s ease;
@@ -90,13 +140,8 @@
     .search-input:focus {
         background: #fff;
         border-color: #2563eb;
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18),
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08),
             inset 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .search-input:hover:not(:focus) {
-        background: #fff;
-        border-color: #93c5fd;
     }
 
     .search-input::placeholder {
@@ -105,9 +150,172 @@
         opacity: 0.8;
     }
 
-    .search-input:focus::placeholder {
-        opacity: 0.4;
+    /* Add spacing between buttons in actions column */
+    #assignmentsDT td .btn {
+        margin-bottom: 0.25rem;
+    }
+
+    /* Improve table hover effect */
+    #assignmentsDT tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+
+    /* Responsive fix: wrap action buttons nicely */
+    @media (max-width: 768px) {
+        #assignmentsDT td .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
     }
 </style>
 
-</div>
+<!-- Your existing JS and DataTables code remain unchanged -->
+
+
+<!-- JS libraries (jQuery, DataTables + extensions) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+<!-- Buttons extension & dependencies -->
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+
+<!-- Bootstrap 5 JS for modal -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    /* Helper: simple confirmation for single deletes (keeps your existing confirmDelete) */
+    function confirmDelete(formId, message) {
+        if (confirm(message || 'Are you sure?')) {
+            const f = document.getElementById(formId);
+            if (f) f.submit();
+        }
+    }
+
+    $(document).ready(function () {
+        // Add search row for column filters (optional)
+        $('#filterRow').show();
+        $('#assignmentsDT thead tr').clone(true).appendTo('#assignmentsDT thead');
+        $('#assignmentsDT thead tr:eq(1) th').each(function (i) {
+            // first two columns are checkbox and S/N - no filter
+            if (i === 0 || i === 1 || i === 10) {
+                $(this).html('');
+            } else {
+                $(this).html('<input class="column-filter form-control form-control-sm" placeholder="Filter..." />');
+            }
+        });
+
+        var table = $('#assignmentsDT').DataTable({
+            orderCellsTop: true,
+            fixedHeader: true,
+            responsive: true,
+            dom: "<'d-flex justify-content-between mb-2'Bf><'table-responsive't><'d-flex justify-content-between mt-2'ip>",
+            buttons: [
+                { extend: 'csvHtml5', text: 'CSV', title: 'assignments_export', exportOptions: { columns: ':visible:not(:first-child):not(:last-child)' } },
+                { extend: 'excelHtml5', text: 'Excel', title: 'assignments_export', exportOptions: { columns: ':visible:not(:first-child):not(:last-child)' } },
+                {
+                    extend: 'pdfHtml5', text: 'PDF', title: 'assignments_export', exportOptions: { columns: ':visible:not(:first-child):not(:last-child)' },
+                    orientation: 'landscape', pageSize: 'A4'
+                },
+                { extend: 'print', text: 'Print', exportOptions: { columns: ':visible:not(:first-child):not(:last-child)' } },
+                { extend: 'colvis', text: 'Columns' }
+            ],
+            columnDefs: [
+                { orderable: false, targets: [0, 1, 10] }, // disable ordering on select col, S/N, actions
+                { searchable: false, targets: [0, 1, 10] },
+            ],
+            pageLength: parseInt($('#perPage').val() || 10),
+            lengthChange: false,
+            language: {
+                search: "", searchPlaceholder: "Quick search..."
+            },
+            drawCallback: function (settings) {
+                var api = this.api();
+                api.column(1, { search: 'applied', order: 'applied' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = i + 1;
+                });
+                updateBulkControls();
+            }
+        });
+
+        $('#searchInput').on('keyup', function () {
+            table.search(this.value).draw();
+        });
+
+        table.columns().every(function (index) {
+            $('input', this.header()).on('keyup change clear', $.fn.dataTable.util.throttle(function () {
+                if (table.column(index).search() !== this.value) {
+                    table.column(index).search(this.value).draw();
+                }
+            }, 250));
+        });
+
+        $('#perPage').on('change', function () {
+            var v = parseInt(this.value);
+            table.page.len(v).draw();
+        });
+
+        $('#selectAll').on('change', function () {
+            var checked = $(this).is(':checked');
+            table.rows({ search: 'applied', page: 'current' }).nodes().to$().find('input.row-select').prop('checked', checked);
+            updateBulkControls();
+        });
+
+        $('#assignmentsDT tbody').on('change', 'input.row-select', function () {
+            if (!$(this).is(':checked')) $('#selectAll').prop('checked', false);
+            else {
+                var allChecked = table.rows({ search: 'applied', page: 'current' }).nodes().to$().find('input.row-select').length ===
+                    table.rows({ search: 'applied', page: 'current' }).nodes().to$().find('input.row-select:checked').length;
+                $('#selectAll').prop('checked', allChecked);
+            }
+            updateBulkControls();
+        });
+
+        function updateBulkControls() {
+            var selectedCount = $('#assignmentsDT tbody').find('input.row-select:checked').length;
+            $('#bulkDeleteBtn').prop('disabled', selectedCount <= 0);
+        }
+
+        $('#bulkDeleteBtn').on('click', function () {
+            var selected = $('#assignmentsDT tbody').find('input.row-select:checked');
+            if (selected.length === 0) return alert('No rows selected.');
+
+            if (!confirm('Delete ' + selected.length + ' selected assignment(s)? This cannot be undone.')) return;
+
+            selected.each(function () {
+                var formId = $(this).data('form-id');
+                var f = document.getElementById(formId);
+                if (f) {
+                    f.submit();
+                } else {
+                    console.warn('Delete form not found for', formId);
+                }
+            });
+        });
+
+        // View details modal logic
+        $('#assignmentsDT tbody').on('click', '.view-details-btn', function () {
+            var row = $(this).closest('tr');
+            $('#detail-class-name').text(row.find('td').eq(2).text().trim());
+            $('#detail-subject-name').text(row.find('td').eq(3).text().trim());
+            $('#detail-subject-code').text(row.find('td').eq(4).text().trim());
+            $('#detail-subject-type').text(row.find('td').eq(5).text().trim());
+            $('#detail-teacher-name').text(row.find('td').eq(6).text().trim());
+            $('#detail-teacher-qualification').text(row.find('td').eq(7).text().trim());
+            $('#detail-max-period-day').text(row.find('td').eq(8).text().trim());
+            $('#detail-max-period-week').text(row.find('td').eq(9).text().trim());
+
+            var detailModal = new bootstrap.Modal(document.getElementById('detailViewModal'));
+            detailModal.show();
+        });
+    });
+</script>
+
+{% endblock %}
