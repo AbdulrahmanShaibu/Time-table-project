@@ -554,6 +554,9 @@ def delete_period_template(template_id):
 from collections import defaultdict
 from datetime import time
 
+from datetime import time
+from collections import defaultdict
+
 @main_bp.route('/timetables')
 @login_required
 def list_timetables():
@@ -575,17 +578,18 @@ def list_timetables():
     for t in timetables:
         timetable_dict[(t.day_of_week, t.start_time)].append(t)
 
+    # Period start times matching your SQL and frontend
     period_times = {
-        1: time(8, 0),
-        2: time(8, 40),
-        3: time(9, 20),
-        4: time(10, 0),
-        5: time(10, 40),
-        6: time(11, 20),
-        7: time(12, 0),
-        8: time(12, 40),
-        9: time(13, 20),
-        10: time(14, 0),
+        1: time(7, 40),
+        2: time(8, 15),
+        3: time(8, 50),
+        4: time(9, 25),
+        5: time(10, 30),
+        6: time(11, 5),
+        7: time(11, 40),
+        8: time(12, 15),
+        9: time(14, 0),
+        10: time(14, 35),
     }
 
     return render_template('timetables/list.html', timetable_dict=timetable_dict, period_times=period_times)
