@@ -1,8 +1,4 @@
 
----
-
-# requirements.txt
-```text
 Flask==2.2.5
 Flask-Login==0.6.2
 Flask-WTF==1.1.1
@@ -17,3 +13,4 @@ xhtml2pdf==0.2.7
 alembic==1.11.1
 pytz==2024.1
 gunicorn==21.2.0
+
