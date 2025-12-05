@@ -20,14 +20,14 @@
 
 
 from app import create_app, db
-from app.models import Teacher, Classroom
+from app.models import Teacher,ClassRoom
 
 app = create_app()
 
 # Optional: add access to models in the shell
 @app.shell_context_processor
 def make_shell_context():
-    return {"db": db, "Teacher": Teacher, "Classroom": Classroom}
+    return {"db": db, "Teacher": Teacher, "Classroom": ClassRoom}
 
 if __name__ == "__main__":
     app.run(debug=True)
